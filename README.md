@@ -27,3 +27,5 @@ Pages have real URLs: English at `/stick-picker/`, Finnish under `/stick-picker/
 - `src/router.ts` maps URLs to pages; `src/seo.ts` builds titles, descriptions and structured data per page.
 
 Pushing to `main` deploys to GitHub Pages through `.github/workflows/deploy.yml`.
+
+For upkeep (new season data, curves, SEO), see [AGENTS.md](AGENTS.md).

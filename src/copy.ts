@@ -452,7 +452,7 @@ export const copy = {
     colLength: t("Stick length", "Mailan pituus"),
     colFlex: t("Flex", "Flex"),
     sizeAges: {
-      youth: t("4–8", "4–8"),
+      youth: t("4–10", "4–10"),
       junior: t("7–12", "7–12"),
       intermediate: t("11–15", "11–15"),
       senior: t("14+", "14+"),
@@ -547,8 +547,8 @@ export const copy = {
       anchor: "sizes",
       question: t("Junior, intermediate or senior?", "Junior, intermediate vai senior?"),
       answer: t(
-        "Pick the size by height and weight, not age. Roughly: youth under 130 cm, junior 130–155 cm, intermediate 150–170 cm and senior from 165 cm.",
-        "Koko valitaan pituuden ja painon mukaan, ei iän. Suunnilleen: youth alle 130 cm, junior 130–155 cm, intermediate 150–170 cm ja senior 165 cm:stä ylöspäin.",
+        "Pick the size by height and weight, not age. Roughly: youth up to 140 cm, junior 130–158 cm, intermediate 150–172 cm and senior from 165 cm. Brands name sizes a little differently, so the ranges overlap.",
+        "Koko valitaan pituuden ja painon mukaan, ei iän. Suunnilleen: youth 140 cm:iin asti, junior 130–158 cm, intermediate 150–172 cm ja senior 165 cm:stä ylöspäin. Merkit nimeävät koot hieman eri tavoin, joten rajat menevät päällekkäin.",
       ),
     },
     {
