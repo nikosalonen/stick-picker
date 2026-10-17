@@ -49,7 +49,7 @@ export const copy = {
     hand: t("Hand", "Kätisyys"),
     handBody: t(
       "L or R: the side the blade is on. Left means the left hand is lower on the stick.",
-      "L tai R: kummalla puolella lapa on. Vasen tarkoittaa, että vasen käsi on alempana varressa.",
+      "L tai R: kummalla puolella lapa on. Left tarkoittaa, että vasen käsi on alempana varressa.",
     ),
     length: t("Length", "Pituus"),
     kick: t("Kick point", "Taipumispiste"),
@@ -89,11 +89,11 @@ export const copy = {
     handTitle: t("Which way does the player hold a stick?", "Miten päin pelaaja pitää mailaa?"),
     handHint: t(
       "This is not about which hand they write with. Many right-handed people shoot left.",
-      "Tämä ei riipu siitä, kummalla kädellä pelaaja kirjoittaa. Moni oikeakätinen pelaa vasenta.",
+      "Tämä ei riipu siitä, kummalla kädellä pelaaja kirjoittaa. Moni oikeakätinen pelaa Left-mailalla.",
     ),
     hands: {
-      left: t("Left", "Vasen"),
-      right: t("Right", "Oikea"),
+      left: t("Left", "Left"),
+      right: t("Right", "Right"),
       unsure: t("Not sure", "En tiedä"),
     } satisfies Record<Hand, Text>,
     handsDetail: {
@@ -104,7 +104,7 @@ export const copy = {
     broomTitle: t("Try the broom test", "Kokeile harjatestiä"),
     broomBody: t(
       "Hand the player a broom and ask them to sweep the floor. Look at the hand that ends up lower on the handle. Left hand lower means a left stick. Right hand lower means a right stick.",
-      "Anna pelaajalle harja ja pyydä lakaisemaan lattiaa. Katso, kumpi käsi on alempana varressa. Vasen käsi alempana tarkoittaa vasenta mailaa, oikea käsi alempana oikeaa mailaa.",
+      "Anna pelaajalle harja ja pyydä lakaisemaan lattiaa. Katso, kumpi käsi on alempana varressa. Vasen käsi alempana tarkoittaa Left-mailaa, oikea käsi alempana Right-mailaa.",
     ),
     broomTip: t(
       "Still unsure? Ask the coach, or let the player try both in the shop.",
@@ -321,10 +321,10 @@ export const copy = {
       "Lie on lavan ja varren välinen kulma. Useimmissa lavoissa se on 5–6, mikä sopii lähes kaikille. Jos pelaajan normaalissa asennossa jäähän osuu vain lavan kanta tai kärki, kysy kaupasta lie-kulmasta.",
     ),
 
-    handTitle: t("Hand: left or right?", "Kätisyys: vasen vai oikea?"),
+    handTitle: t("Hand: left or right?", "Kätisyys: Left vai Right?"),
     handBody: t(
       "A left stick has the blade on the player's left side, with the left hand lower on the shaft and the right hand at the top. It has nothing to do with writing hand. Left sticks are more common, so shops stock more of them.",
-      "Vasemmassa mailassa lapa on pelaajan vasemmalla puolella: vasen käsi on alempana varressa ja oikea ylhäällä. Kirjoituskädellä ei ole merkitystä. Vasen on yleisempi, joten kaupoissa on niitä enemmän.",
+      "Left-mailassa lapa on pelaajan vasemmalla puolella: vasen käsi on alempana varressa ja oikea ylhäällä. Kirjoituskädellä ei ole merkitystä. Left on yleisempi, joten kaupoissa on niitä enemmän.",
     ),
 
     gripTitle: t("Grip or no grip?", "Grip vai ei?"),
