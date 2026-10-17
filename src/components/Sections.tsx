@@ -1,13 +1,31 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { copy } from "../copy";
 import { BRANDS, KICK_ORDER } from "../data/brands";
 import { CURVES } from "../data/curves";
 import { useLang } from "../i18n";
-import { SIZES, type CurveId, type Recommendation, type SizeCategory } from "../logic/recommend";
-import { CurveDrawing, FlexDemo, KickDiagram, LengthFigure } from "./Illustrations";
-import { Scale } from "./Scale";
+import { SIZES, toInches, type Answers, type CurveId, type Recommendation, type SizeCategory } from "../logic/recommend";
+import { BladeTopDown, FaceIcon } from "./art/BladeTopDown";
+import { FlexBench } from "./art/FlexBench";
+import { KickGlyph, KickShot } from "./art/KickShot";
+import { LengthExamples, LengthFigure } from "./art/LengthFigure";
+import { holdingViewBox, HoldingPlayer } from "./art/Player";
+import { FlexChart } from "./charts/FlexChart";
+import { SizeChart } from "./charts/SizeChart";
+import { TableView } from "./charts/chartKit";
 
-function Section({ id, title, aside, children }: { id: string; title: string; aside?: ReactNode; children: ReactNode }) {
+function Section({
+  id,
+  title,
+  aside,
+  below,
+  children,
+}: {
+  id: string;
+  title: string;
+  aside?: ReactNode;
+  below?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="explain" id={id} aria-labelledby={`${id}-title`}>
       <div className="explain-text">
@@ -15,46 +33,63 @@ function Section({ id, title, aside, children }: { id: string; title: string; as
         {children}
       </div>
       {aside && <div className="explain-aside">{aside}</div>}
+      {below && <div className="explain-below">{below}</div>}
     </section>
   );
 }
 
-export function LengthSection({ rec }: { rec?: Recommendation }) {
+type Props = { rec?: Recommendation; answers?: Answers };
+
+const isChild = (answers?: Answers) => (answers ? answers.heightCm < 150 : false);
+
+export function LengthSection({ rec, answers }: Props) {
   const { t } = useLang();
-  const ratio = rec ? (rec.lengthCm - rec.lengthRangeCm[0]) / Math.max(1, rec.lengthRangeCm[1] - rec.lengthRangeCm[0]) : 0.3;
+  const ratio = rec ? (rec.lengthCm - rec.lengthRangeCm[0]) / Math.max(1, rec.lengthRangeCm[1] - rec.lengthRangeCm[0]) : 0.35;
   return (
     <Section
       id="length"
       title={t(copy.explain.lengthTitle)}
-      aside={<LengthFigure ratio={ratio} chin={t(copy.explain.chin)} nose={t(copy.explain.nose)} />}
+      aside={
+        <LengthFigure
+          ratio={ratio}
+          child={isChild(answers)}
+          chin={t(copy.explain.chin)}
+          nose={t(copy.explain.nose)}
+          heightLabel={answers ? `${answers.heightCm} cm` : undefined}
+          stickLabel={rec ? `≈ ${rec.lengthCm} cm` : undefined}
+        />
+      }
     >
       <p>{t(copy.explain.lengthBody)}</p>
       <p>{t(copy.explain.lengthMore)}</p>
       {rec && (
-        <Scale
-          min={rec.lengthRangeCm[0] - 6}
-          max={rec.lengthRangeCm[1] + 6}
-          value={rec.lengthCm}
-          range={rec.lengthRangeCm}
-          leftLabel={t(copy.explain.shorterControl)}
-          rightLabel={t(copy.explain.longerReach)}
-          valueLabel={`${rec.lengthCm} cm`}
-          ariaLabel={`${rec.lengthCm} cm, ${rec.lengthRangeCm[0]}–${rec.lengthRangeCm[1]} cm`}
-        />
+        <p className="callout">
+          {t(copy.explain.lengthYours(rec.lengthCm, toInches(rec.lengthCm), rec.stockLengthIn, rec.cutCm))}
+        </p>
       )}
+      <LengthExamples
+        examples={[
+          { key: "short", label: t(copy.explain.tooShort), ok: false, topRatio: 0.6 },
+          { key: "right", label: t(copy.explain.justRight), ok: true, topRatio: 0.86 },
+          { key: "long", label: t(copy.explain.tooLong), ok: false, topRatio: 1.06 },
+        ]}
+      />
     </Section>
   );
 }
 
-const SIZE_ORDER: SizeCategory[] = ["youth", "junior", "intermediate", "senior"];
-
-export function FlexSection({ rec }: { rec?: Recommendation }) {
+export function FlexSection({ rec, answers }: Props) {
   const { t } = useLang();
-  const zones = SIZE_ORDER.map((size) => {
-    const flexes = SIZES[size].flexes;
-    return { from: flexes[0] - 2, to: flexes[flexes.length - 1] + 2, label: copy.sizeShort[size] };
-  });
-  const demoFlexes = rec ? [rec.flex, rec.flex >= 85 ? 40 : 100] : [40, 85];
+  const compare = rec ? (rec.flex >= 85 ? 40 : 100) : 85;
+  const benches = rec
+    ? [
+        { flex: rec.flex, accent: true },
+        { flex: compare, accent: false },
+      ]
+    : [
+        { flex: 40, accent: true },
+        { flex: compare, accent: false },
+      ];
   return (
     <Section
       id="flex"
@@ -62,56 +97,59 @@ export function FlexSection({ rec }: { rec?: Recommendation }) {
       aside={
         <>
           <h3 className="aside-title">{t(copy.explain.tryFlex)}</h3>
-          <FlexDemo flexes={demoFlexes} label={t(copy.explain.pushLabel)} result={(cm, flex) => t(copy.explain.pushResult(cm, flex))} />
+          <FlexBench
+            flexes={benches}
+            pushLabel={t(copy.explain.pushLabel)}
+            stickLabel={(flex) => (rec && flex === rec.flex ? t(copy.explain.benchYours(flex)) : `Flex ${flex}`)}
+          />
+          <p className="small muted">{t(copy.explain.benchNote)}</p>
         </>
       }
+      below={<FlexChart rec={rec} weightKg={answers?.weightKg} />}
     >
       <p>{t(copy.explain.flexBody)}</p>
       <p>{t(copy.explain.flexRule)}</p>
       <p>{t(copy.explain.flexCut)}</p>
-      {rec && (
-        <>
-          <Scale
-            min={5}
-            max={108}
-            value={rec.flex}
-            range={rec.flexRange}
-            zones={zones}
-            leftLabel={t(copy.explain.softer)}
-            rightLabel={t(copy.explain.stiffer)}
-            valueLabel={`Flex ${rec.flex}`}
-            ariaLabel={`Flex ${rec.flex}`}
-          />
-          {rec.cutCm > 0 && <p className="callout">{t(copy.explain.flexAfter(rec.flex, rec.flexAfterCut))}</p>}
-        </>
-      )}
+      {rec && rec.cutCm > 0 && <p className="callout">{t(copy.explain.flexAfter(rec.flex, rec.flexAfterCut))}</p>}
     </Section>
   );
 }
 
-export function KickSection({ rec }: { rec?: Recommendation }) {
+export function KickSection({ rec }: Props) {
   const { t } = useLang();
+  const [shotToken, setShotToken] = useState(0);
   return (
     <Section id="kick" title={t(copy.explain.kickTitle)}>
       <p>{t(copy.explain.kickBody)}</p>
+      <div className="kick-play">
+        <button className="button" onClick={() => setShotToken((n) => n + 1)}>
+          <span className="button-icon" aria-hidden="true">
+            <svg viewBox="0 0 16 16">
+              <path d="M4 2.5 L13 8 L4 13.5 Z" />
+            </svg>
+          </span>
+          {t(copy.explain.playShots)}
+        </button>
+        <span className="small muted">{t(copy.explain.playShotsHint)}</span>
+      </div>
       <div className="kick-options">
         {KICK_ORDER.map((kick) => (
-          <div key={kick} className="kick-option" data-match={rec?.kick === kick || undefined}>
-            <KickDiagram kick={kick} />
-            <div>
+          <article key={kick} className="kick-option" data-match={rec?.kick === kick || undefined}>
+            <KickShot kick={kick} shotToken={shotToken} accent={rec?.kick === kick} />
+            <header>
               <h3>{t(copy.kicksPlain[kick])}</h3>
-              <p className="kick-name">{t(copy.kicks[kick])}</p>
-              <p>{t(copy.kicksBody[kick])}</p>
-              {rec?.kick === kick && <p className="match-badge">{t(copy.explain.recommended)}</p>}
-            </div>
-          </div>
+              {rec?.kick === kick && <span className="match-badge">{t(copy.explain.recommended)}</span>}
+            </header>
+            <p className="kick-name">{t(copy.kicks[kick])}</p>
+            <p>{t(copy.kicksBody[kick])}</p>
+          </article>
         ))}
       </div>
     </Section>
   );
 }
 
-export function CurveSection({ rec }: { rec?: Recommendation }) {
+export function CurveSection({ rec }: Props) {
   const { t } = useLang();
   const ids: CurveId[] = rec ? [rec.curve, ...rec.curveAlternatives] : ["P92", "P88", "P28", "P14"];
   return (
@@ -121,14 +159,14 @@ export function CurveSection({ rec }: { rec?: Recommendation }) {
       <div className="curves">
         {ids.map((id, index) => {
           const curve = CURVES[id];
-          const isPick = rec && index === 0;
+          const isPick = Boolean(rec && index === 0);
           return (
             <article key={id} className="curve-card" data-match={isPick || undefined}>
               <header>
                 <h3>{id}</h3>
                 {isPick && <span className="match-badge">{t(copy.explain.recommended)}</span>}
               </header>
-              <CurveDrawing curve={curve} heel={t(copy.explain.heel)} toe={t(copy.explain.toe)} />
+              <BladeTopDown curve={curve} heel={t(copy.explain.heel)} toe={t(copy.explain.toe)} accent={isPick} />
               <p>{t(curve.summary)}</p>
               <dl className="facts">
                 <div>
@@ -137,7 +175,10 @@ export function CurveSection({ rec }: { rec?: Recommendation }) {
                 </div>
                 <div>
                   <dt>{t(copy.explain.face)}</dt>
-                  <dd>{t(curve.face)}</dd>
+                  <dd className="face-fact">
+                    <FaceIcon face={curve.faceKind} />
+                    {t(curve.face)}
+                  </dd>
                 </div>
                 <div>
                   <dt>{t(copy.explain.lie)}</dt>
@@ -155,29 +196,64 @@ export function CurveSection({ rec }: { rec?: Recommendation }) {
         })}
       </div>
       <details className="more">
-        <summary>{t(copy.explain.lie)}?</summary>
+        <summary>{t(copy.explain.lieQuestion)}</summary>
         <p>{t(copy.explain.lieBody)}</p>
+        <p>{t(copy.explain.faceBody)}</p>
       </details>
     </Section>
   );
 }
 
-export function HandSection() {
+export function HandSection({ rec }: Props) {
   const { t } = useLang();
+  const hands = ["left", "right"] as const;
   return (
-    <Section id="hand" title={t(copy.explain.handTitle)}>
+    <Section
+      id="hand"
+      title={t(copy.explain.handTitle)}
+      aside={
+        <div className="hand-figures">
+          {hands.map((hand) => (
+            <figure key={hand} className="hand-figure" data-match={rec?.hand === hand || undefined}>
+              <svg viewBox={holdingViewBox(hand)} aria-hidden="true">
+                <HoldingPlayer hand={hand} />
+              </svg>
+              <figcaption>
+                <strong>{t(copy.quiz.hands[hand])}</strong>
+                <span>{t(copy.quiz.handsDetail[hand])}</span>
+              </figcaption>
+            </figure>
+          ))}
+          <p className="small muted hand-figures-note">{t(copy.explain.seenFromBehind)}</p>
+        </div>
+      }
+    >
       <p>{t(copy.explain.handBody)}</p>
-      <aside className="tip">
-        <h3>{t(copy.quiz.broomTitle)}</h3>
-        <p>{t(copy.quiz.broomBody)}</p>
-      </aside>
+      <BroomTip />
       <h3>{t(copy.explain.gripTitle)}</h3>
       <p>{t(copy.explain.gripBody)}</p>
     </Section>
   );
 }
 
-export function BrandSection({ rec }: { rec?: Recommendation }) {
+/** The broom test with a picture of it. */
+export function BroomTip({ extra }: { extra?: ReactNode }) {
+  const { t } = useLang();
+  return (
+    <aside className="tip tip-with-art">
+      <svg viewBox={holdingViewBox("left")} aria-hidden="true" className="tip-art">
+        <HoldingPlayer hand="left" tool="broom" />
+      </svg>
+      <div>
+        <h3>{t(copy.quiz.broomTitle)}</h3>
+        <p>{t(copy.quiz.broomBody)}</p>
+        {extra}
+      </div>
+    </aside>
+  );
+}
+
+export function BrandSection({ rec }: Props) {
   const { t } = useLang();
   return (
     <Section id="brands" title={t(copy.explain.brandsTitle)}>
@@ -191,8 +267,13 @@ export function BrandSection({ rec }: { rec?: Recommendation }) {
               </th>
               {KICK_ORDER.map((kick) => (
                 <th key={kick} scope="col" data-match={rec?.kick === kick || undefined}>
-                  {t(copy.kicksPlain[kick])}
-                  <span className="th-sub">{t(copy.kicks[kick])}</span>
+                  <span className="th-with-glyph">
+                    <KickGlyph kick={kick} />
+                    <span>
+                      {t(copy.kicksPlain[kick])}
+                      <span className="th-sub">{t(copy.kicks[kick])}</span>
+                    </span>
+                  </span>
                 </th>
               ))}
             </tr>
@@ -208,7 +289,18 @@ export function BrandSection({ rec }: { rec?: Recommendation }) {
                       {family ? (
                         <>
                           <strong>{family.name}</strong>
-                          <span className="models">{family.models.join(", ")}</span>
+                          <span className="models">
+                            {family.models.map((model, i) => (
+                              <span key={model} className="model">
+                                <span className="tier-dots" aria-label={t(copy.explain.tiers[Math.min(2, i)])}>
+                                  {[0, 1, 2].map((dot) => (
+                                    <span key={dot} data-on={dot < 3 - i || undefined} />
+                                  ))}
+                                </span>
+                                {model}
+                              </span>
+                            ))}
+                          </span>
                         </>
                       ) : (
                         <span className="muted small">{t(copy.explain.noFamily)}</span>
@@ -221,6 +313,26 @@ export function BrandSection({ rec }: { rec?: Recommendation }) {
           </tbody>
         </table>
       </div>
+      <p className="small muted tier-legend">
+        <span className="tier-dots" aria-hidden="true">
+          <span data-on />
+          <span data-on />
+          <span data-on />
+        </span>
+        {t(copy.explain.tiers[0])}
+        <span className="tier-dots" aria-hidden="true">
+          <span data-on />
+          <span data-on />
+          <span />
+        </span>
+        {t(copy.explain.tiers[1])}
+        <span className="tier-dots" aria-hidden="true">
+          <span data-on />
+          <span />
+          <span />
+        </span>
+        {t(copy.explain.tiers[2])}
+      </p>
       {BRANDS.filter((b) => b.note).map((b) => (
         <p key={b.name} className="small muted">
           {b.name}: {t(b.note!)}
@@ -233,12 +345,25 @@ export function BrandSection({ rec }: { rec?: Recommendation }) {
   );
 }
 
-export function SizeChartSection() {
+const SIZE_ORDER: SizeCategory[] = ["youth", "junior", "intermediate", "senior"];
+
+export function SizeChartSection({ rec, answers }: Props) {
   const { t } = useLang();
   return (
-    <Section id="sizes" title={t(copy.explain.sizesTitle)}>
+    <Section
+      id="sizes"
+      title={t(rec ? copy.explain.sizeYoursTitle : copy.explain.sizesTitle)}
+      below={<SizeChart heightCm={answers?.heightCm} size={rec?.size} table={<SizeTable />} />}
+    >
       <p>{t(copy.explain.sizesBody)}</p>
-      <div className="brand-table-wrap" tabIndex={0} role="region" aria-labelledby="sizes-title">
+    </Section>
+  );
+}
+
+function SizeTable() {
+  const { t } = useLang();
+  return (
+      <TableView summary={t(copy.charts.showTable)}>
         <table className="size-table">
           <thead>
             <tr>
@@ -273,8 +398,7 @@ export function SizeChartSection() {
             })}
           </tbody>
         </table>
-      </div>
-    </Section>
+      </TableView>
   );
 }
 

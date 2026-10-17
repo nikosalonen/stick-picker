@@ -14,6 +14,8 @@ import {
   type ShotStyle,
 } from "../logic/recommend";
 import { answersToQuery, go, QUIZ_STEPS, type QuizStep } from "../router";
+import { holdingViewBox, HoldingPlayer } from "../components/art/Player";
+import { BroomTip } from "../components/Sections";
 
 export type Draft = Partial<Answers>;
 
@@ -160,17 +162,11 @@ export function Quiz({ step }: { step: QuizStep }) {
               value: hand,
               label: t(copy.quiz.hands[hand]),
               detail: t(copy.quiz.handsDetail[hand]),
-              icon: hand === "unsure" ? undefined : <HandIcon hand={hand} />,
+              icon: hand === "unsure" ? <UnsureIcon /> : <HandIcon hand={hand} />,
             }))}
             onChoose={(hand, viaKeyboard) => (hand === "unsure" ? update({ hand }) : chooseAndNext({ hand }, viaKeyboard))}
           />
-          {draft.hand === "unsure" && (
-            <aside className="tip">
-              <h3>{t(copy.quiz.broomTitle)}</h3>
-              <p>{t(copy.quiz.broomBody)}</p>
-              <p className="muted">{t(copy.quiz.broomTip)}</p>
-            </aside>
-          )}
+          {draft.hand === "unsure" && <BroomTip extra={<p className="muted">{t(copy.quiz.broomTip)}</p>} />}
         </>
       );
       break;
@@ -381,14 +377,21 @@ function NumberSlider({
   );
 }
 
-/** Two hands on a stick, showing which hand is lower. */
+/** A player seen from behind, holding the stick; the ring marks the lower hand. */
 function HandIcon({ hand }: { hand: "left" | "right" }) {
-  const flip = hand === "right";
   return (
-    <svg className="hand-icon" viewBox="0 0 64 64" aria-hidden="true" style={flip ? { transform: "scaleX(-1)" } : undefined}>
-      <path d="M46 4 L22 52 L6 56" className="hand-icon-stick" />
-      <circle cx="42" cy="13" r="6" className="hand-icon-top" />
-      <circle cx="31" cy="34" r="7" className="hand-icon-low" />
+    <svg className="hand-icon" viewBox={holdingViewBox(hand)} aria-hidden="true">
+      <HoldingPlayer hand={hand} />
+    </svg>
+  );
+}
+
+function UnsureIcon() {
+  return (
+    <svg className="hand-icon hand-icon-unsure" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="22" />
+      <path d="M25 26 Q25 18 32 18 Q39 18 39 25 Q39 30 32 32 L32 37" />
+      <circle cx="32" cy="45" r="2.4" />
     </svg>
   );
 }

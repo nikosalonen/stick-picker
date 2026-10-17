@@ -9,6 +9,7 @@ export type Curve = {
   depth: number;
   location: Text;
   face: Text;
+  faceKind: "open" | "slightlyOpen" | "closed";
   lie: string;
   /** Names for the same curve at every brand. */
   sameAs: string;
@@ -26,6 +27,7 @@ export const CURVES: Record<CurveId, Curve> = {
     depth: 0.55,
     location: { en: "Mid", fi: "Keskellä" },
     face: { en: "Slightly open", fi: "Hieman avoin" },
+    faceKind: "slightlyOpen",
     lie: "6",
     sameAs: "Bauer P92, CCM P29, Warrior W03, True T92",
     otherNames: "CCM P29, Warrior W03, True T92",
@@ -41,6 +43,7 @@ export const CURVES: Record<CurveId, Curve> = {
     depth: 0.35,
     location: { en: "Mid", fi: "Keskellä" },
     face: { en: "Slightly open", fi: "Hieman avoin" },
+    faceKind: "slightlyOpen",
     lie: "6",
     sameAs: "Bauer P88, CCM P88, Warrior W88, True T88",
     otherNames: "Warrior W88, True T88",
@@ -56,6 +59,7 @@ export const CURVES: Record<CurveId, Curve> = {
     depth: 0.85,
     location: { en: "Toe", fi: "Kärjessä" },
     face: { en: "Open", fi: "Avoin" },
+    faceKind: "open",
     lie: "5",
     sameAs: "Bauer P28, CCM P28, Warrior W28, True T28",
     otherNames: "Warrior W28, True T28",
@@ -71,6 +75,7 @@ export const CURVES: Record<CurveId, Curve> = {
     depth: 0.5,
     location: { en: "Mid", fi: "Keskellä" },
     face: { en: "Closed", fi: "Suljettu" },
+    faceKind: "closed",
     lie: "5.5",
     sameAs: "Bauer P14, CCM P30, Warrior W14",
     otherNames: "CCM P30, Warrior W14",

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { copy } from "../copy";
 import { useLang } from "../i18n";
-import { LABEL_PARTS, StickLabel, type LabelPart } from "../components/StickLabel";
+import { LABEL_PARTS, StickArt, type LabelPart } from "../components/art/StickArt";
 
 const EXAMPLE: Record<LabelPart, string> = { size: "JR", flex: "40", curve: "P92", hand: "L", length: '52"' };
 
@@ -44,7 +44,7 @@ export function Home() {
         <h2 id="decoder-title">{t(copy.home.decoderTitle)}</h2>
         <p className="muted">{t(copy.home.decoderLead)}</p>
         <div className="decoder-stick">
-          <StickLabel values={EXAMPLE} active={active} onSelect={setActive} title={t(copy.home.decoderTitle)} />
+          <StickArt values={EXAMPLE} active={active} onSelect={setActive} title={t(copy.home.decoderTitle)} animateIn />
         </div>
         <div className="decoder-tabs" role="tablist" aria-label={t(copy.home.decoderTitle)}>
           {LABEL_PARTS.map((part) => (

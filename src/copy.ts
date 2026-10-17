@@ -258,7 +258,39 @@ export const copy = {
     pushLabel: t("Push on the stick", "Paina mailaa"),
     pushResult: (cm: string, flex: number) =>
       t(`A flex ${flex} stick bends about ${cm} cm`, `Flex ${flex} -maila taipuu noin ${cm} cm`),
-    tryFlex: t("Compare flex", "Vertaa jäykkyyttä"),
+    tryFlex: t("Try it: the flex test", "Kokeile: jäykkyystesti"),
+    benchYours: (flex: number) => t(`Flex ${flex} (yours)`, `Flex ${flex} (sinun)`),
+    benchNote: t(
+      "Stick makers measure flex like this: the shaft rests on two supports and is pushed down in the middle. The bend is drawn bigger than real life so you can see it.",
+      "Valmistajat mittaavat jäykkyyden näin: varsi lepää kahden tuen päällä ja sitä painetaan keskeltä. Taipuma on piirretty todellista suuremmaksi, jotta sen näkee.",
+    ),
+    lengthYours: (cm: number, inches: number, stock: number, cut: number) =>
+      t(
+        cut > 0
+          ? `Your stick: buy ${stock}" and cut it to about ${cm} cm (${inches}"). That is about ${cut} cm off.`
+          : `Your stick: about ${cm} cm (${inches}"). A ${stock}" stick fits without cutting.`,
+        cut > 0
+          ? `Sinun mailasi: osta ${stock}" ja lyhennä noin ${cm} cm:iin (${inches}"). Lyhennettävää on noin ${cut} cm.`
+          : `Sinun mailasi: noin ${cm} cm (${inches}"). ${stock}" maila sopii lyhentämättä.`,
+      ),
+    tooShort: t("Too short", "Liian lyhyt"),
+    justRight: t("Just right", "Sopiva"),
+    tooLong: t("Too long", "Liian pitkä"),
+    playShots: t("Play the shots", "Laukaise"),
+    playShotsHint: t(
+      "Watch when each puck leaves the blade.",
+      "Katso, milloin kiekko irtoaa lavasta.",
+    ),
+    seenFromBehind: t(
+      "Seen from behind. The ring marks the lower hand.",
+      "Takaapäin katsottuna. Rengas näyttää alemman käden.",
+    ),
+    lieQuestion: t("What are lie and face?", "Mitä ovat lie ja lavan kulma?"),
+    faceBody: t(
+      "Face is how the blade is tilted. An open face (tilted back) lifts the puck easily. A closed face (tilted forward) keeps it low. Slightly open suits most players.",
+      "Lavan kulma kertoo, miten lapa on kallistettu. Avoin lapa (taaksepäin kallistettu) nostaa kiekon helposti. Suljettu lapa (eteenpäin kallistettu) pitää sen matalalla. Hieman avoin sopii useimmille.",
+    ),
+    sizeYoursTitle: t("Size: which category?", "Koko: mikä kokoluokka?"),
 
     kickTitle: t("Kick point: where does it bend?", "Taipumispiste: mistä maila taipuu?"),
     kickBody: t(
@@ -352,6 +384,38 @@ export const copy = {
       "Everything on a stick label, in plain words. Want a recommendation instead?",
       "Kaikki mailan merkinnät selkokielellä. Haluatko mieluummin suosituksen?",
     ),
+  },
+
+  charts: {
+    flexTitle: t("Flex by body weight", "Jäykkyys painon mukaan"),
+    flexSubtitle: t(
+      "The shaded band is the usual range, from beginners (softer) to competitive players (stiffer).",
+      "Varjostettu alue on tavallinen vaihteluväli aloittelijoista (pehmeämpi) tavoitteellisiin pelaajiin (jäykempi).",
+    ),
+    flexAria: t(
+      "Chart of recommended flex by body weight. Use the arrow keys to read values.",
+      "Kaavio suositellusta jäykkyydestä painon mukaan. Lue arvoja nuolinäppäimillä.",
+    ),
+    weightAxis: t("Body weight (kg)", "Paino (kg)"),
+    flexAxis: t("Flex", "Flex"),
+    beginner: t("Beginner", "Aloittelija"),
+    team: t("Team player", "Joukkuepelaaja"),
+    competitive: t("Competitive", "Tavoitteellinen"),
+    yourStick: t("Your stick", "Sinun mailasi"),
+    onLabel: (flex: number) => t(`Label says ${flex}`, `Tarrassa ${flex}`),
+    afterCut: (flex: number) => t(`Feels like ${flex} after cutting`, `Lyhennettynä noin ${flex}`),
+    hoverHint: t(
+      "Move over the chart (or use the arrow keys) to read any weight. The bars on the right show the flex each size is sold in.",
+      "Liiku kaavion päällä (tai käytä nuolinäppäimiä) nähdäksesi minkä tahansa painon. Oikean reunan palkit näyttävät, missä jäykkyyksissä kutakin kokoa myydään.",
+    ),
+    showTable: t("Show as a table", "Näytä taulukkona"),
+    sizeTitle: t("Stick size by player height", "Mailan koko pelaajan pituuden mukaan"),
+    sizeSubtitle: t(
+      "Each bar is the usual player height for that size. Point at a bar for stick length and flex.",
+      "Jokainen palkki on koon tavallinen pelaajan pituus. Osoita palkkia nähdäksesi mailan pituuden ja jäykkyyden.",
+    ),
+    heightAxis: t("Player height (cm)", "Pelaajan pituus (cm)"),
+    yourPlayer: (cm: number) => t(`Your player: ${cm} cm`, `Pelaajasi: ${cm} cm`),
   },
 
   footer: t(

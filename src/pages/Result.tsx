@@ -3,7 +3,7 @@ import { copy } from "../copy";
 import { CURVES } from "../data/curves";
 import { useLang } from "../i18n";
 import { recommend, toInches, type Answers } from "../logic/recommend";
-import { StickLabel } from "../components/StickLabel";
+import { StickArt } from "../components/art/StickArt";
 import {
   BrandSection,
   CurveSection,
@@ -12,7 +12,9 @@ import {
   KickSection,
   LengthSection,
   MistakesSection,
+  SizeChartSection,
 } from "../components/Sections";
+import { ICONS } from "../components/art/icons";
 import { go } from "../router";
 
 export function Result({ answers }: { answers: Answers | null }) {
@@ -36,33 +38,37 @@ export function Result({ answers }: { answers: Answers | null }) {
   const handText =
     rec.hand === "unsure" ? t(copy.result.handUnsure) : `${t(copy.quiz.hands[rec.hand])} (${handLetter})`;
 
-  const rows: { label: string; value: string; note?: string; href?: string; plain?: boolean }[] = [
-    { label: t(copy.label.size), value: `${t(copy.sizes[rec.size])} (${copy.sizeShort[rec.size]})` },
+  const rows: { icon: keyof typeof ICONS; label: string; value: string; note?: string; href?: string; plain?: boolean }[] = [
+    { icon: "size", label: t(copy.label.size), value: `${t(copy.sizes[rec.size])} (${copy.sizeShort[rec.size]})`, href: "#sizes" },
     {
+      icon: "flex",
       label: t(copy.label.flex),
       value: String(rec.flex),
       note: rec.flexRange[0] !== rec.flexRange[1] ? `${t(copy.result.alsoFine)}: ${rec.flexRange[0]}` : undefined,
       href: "#flex",
     },
     {
+      icon: "curve",
       label: t(copy.label.curve),
       value: `${rec.curve}`,
       note: `${t(copy.result.otherNames)}: ${CURVES[rec.curve].otherNames}. ${t(copy.result.alsoFine)}: ${rec.curveAlternatives[0]}`,
       href: "#curve",
     },
-    { label: t(copy.label.hand), value: handText, href: "#hand" },
+    { icon: "hand", label: t(copy.label.hand), value: handText, href: "#hand" },
     {
+      icon: "length",
       label: t(copy.label.length),
       value: t(copy.result.buyLength(rec.stockLengthIn)),
       note: rec.cutCm > 0 ? t(copy.result.cutTo(rec.lengthCm, toInches(rec.lengthCm))) : t(copy.result.noCut),
       href: "#length",
     },
     {
+      icon: "kick",
       label: t(copy.label.kick),
       value: rec.kickMatters ? `${t(copy.kicksPlain[rec.kick])} (${t(copy.kicks[rec.kick]).toLowerCase()})` : t(copy.result.kickNoMatter),
       href: "#kick",
     },
-    { label: t(copy.result.budget), value: t(young ? copy.result.budgetKids : copy.result.budgetAdults), plain: true },
+    { icon: "budget", label: t(copy.result.budget), value: t(young ? copy.result.budgetKids : copy.result.budgetAdults), plain: true },
   ];
 
   const copyList = async () => {
@@ -102,7 +108,8 @@ export function Result({ answers }: { answers: Answers | null }) {
       </header>
 
       <div className="result-stick">
-        <StickLabel
+        <StickArt
+          animateIn
           title={t(copy.result.yourStick)}
           values={{
             size: copy.sizeShort[rec.size],
@@ -118,7 +125,10 @@ export function Result({ answers }: { answers: Answers | null }) {
         <dl className="shopping-list">
           {rows.map((row) => (
             <div key={row.label} className="shopping-row" data-plain={row.plain || undefined}>
-              <dt>{row.label}</dt>
+              <dt>
+                {ICONS[row.icon]}
+                {row.label}
+              </dt>
               <dd>
                 <span className="shopping-value">{row.value}</span>
                 {row.note && <span className="shopping-note">{row.note}</span>}
@@ -152,10 +162,11 @@ export function Result({ answers }: { answers: Answers | null }) {
       </section>
 
       <h2 className="why-title">{t(copy.result.whyTitle)}</h2>
-      <LengthSection rec={rec} />
-      <FlexSection rec={rec} />
+      <SizeChartSection rec={rec} answers={answers} />
+      <LengthSection rec={rec} answers={answers} />
+      <FlexSection rec={rec} answers={answers} />
       <CurveSection rec={rec} />
-      <HandSection />
+      <HandSection rec={rec} />
       <KickSection rec={rec} />
       <BrandSection rec={rec} />
       <MistakesSection />
