@@ -5,6 +5,12 @@ import { BASE, pathTo, QUIZ_STEPS, samePageIn, type Route } from "./router";
 /** Where the site is published. Absolute URLs (canonical, Open Graph, sitemap) need it. */
 export const SITE_ORIGIN = "https://nikosalonen.github.io";
 
+/**
+ * Google Search Console ownership token (the content of its google-site-verification
+ * meta tag). Empty means no tag is added.
+ */
+export const GOOGLE_SITE_VERIFICATION = "i1Mk2jXa7MPoiVRPfSOXYzPGMK5eRcesWCo9QQ5UGBc";
+
 const t = (en: string, fi: string): Text => ({ en, fi });
 
 const TITLES = {
@@ -150,6 +156,7 @@ export function headHtml(head: Head): string {
   const ogAlternate = head.lang === "fi" ? "en_US" : "fi_FI";
   const tags = [
     `<title>${e(head.title)}</title>`,
+    ...(GOOGLE_SITE_VERIFICATION ? [`<meta name="google-site-verification" content="${e(GOOGLE_SITE_VERIFICATION)}" />`] : []),
     `<meta name="description" content="${e(head.description)}" />`,
     `<meta name="robots" content="${head.indexable ? "index, follow" : "noindex, follow"}" />`,
     `<link rel="canonical" href="${e(head.canonical)}" />`,
