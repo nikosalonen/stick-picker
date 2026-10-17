@@ -114,9 +114,9 @@ export function KickShot({ kick, shotToken, accent }: { kick: KickPoint; shotTok
       <rect x="0" y={HEEL.y + 5} width="220" height="18" fill={`url(#${uid}-ice)`} />
       <line x1="0" x2="220" y1={HEEL.y + 5} y2={HEEL.y + 5} className="figure-floor" />
       {/* Where it bends: a soft glow, then a crisp band */}
-      <motion.path d={d} pathLength={100} strokeDasharray={`0 ${from} ${to - from} 200`} className="kick-glow" filter={`url(#${uid}-glow)`} />
+      <motion.path d={d} pathLength={100} strokeDasharray={`${to - from} 200`} strokeDashoffset={-from} className="kick-glow" filter={`url(#${uid}-glow)`} />
       <motion.path d={d} className="kick-shaft" />
-      <motion.path d={d} pathLength={100} strokeDasharray={`0 ${from} ${to - from} 200`} className="kick-zone" />
+      <motion.path d={d} pathLength={100} strokeDasharray={`${to - from} 200`} strokeDashoffset={-from} className="kick-zone" />
       <path d={BLADE} className="kick-blade" />
       <motion.ellipse cx={HEEL.x + 66} cy={HEEL.y + 1.5} rx="10" ry="4" className="kick-puck" style={{ x: puckX, opacity: puckOpacity }} />
       <motion.circle cx={topX} cy={topY} r="7" className="kick-glove" />
@@ -132,7 +132,7 @@ export function KickGlyph({ kick }: { kick: KickPoint }) {
   return (
     <svg className="kick-glyph" viewBox="20 8 120 170" aria-hidden="true">
       <path d={d} className="kick-glyph-shaft" />
-      <path d={d} pathLength={100} strokeDasharray={`0 ${from} ${to - from} 200`} className="kick-glyph-zone" />
+      <path d={d} pathLength={100} strokeDasharray={`${to - from} 200`} strokeDashoffset={-from} className="kick-glyph-zone" />
       <path d={`M${HEEL.x} ${HEEL.y} L${HEEL.x + 34} ${HEEL.y + 2}`} className="kick-glyph-shaft" />
     </svg>
   );

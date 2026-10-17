@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from "motion/react";
+import { useId } from "react";
 import { build, StandingPlayer } from "./Player";
 
 /** A stick standing upright on the tip of its blade, top at `topY`, on a floor at `floorY`. */
@@ -31,14 +32,17 @@ type Props = {
   nose: string;
   heightLabel?: string;
   stickLabel?: string;
+  /** What the picture shows, for screen readers. */
+  description: string;
 };
 
 /**
  * The length rule as a picture: the player standing in shoes, the stick upright on its toe,
  * and the chin-to-nose band where the top of the stick should land.
  */
-export function LengthFigure({ ratio, child, chin, nose, heightLabel, stickLabel }: Props) {
+export function LengthFigure({ ratio, child, chin, nose, heightLabel, stickLabel, description }: Props) {
   const reduceMotion = useReducedMotion();
+  const floorId = `${useId().replace(/:/g, "")}-floor`;
   const b = build(child);
   const floorY = 318;
   const scale = 2.6;
@@ -50,14 +54,14 @@ export function LengthFigure({ ratio, child, chin, nose, heightLabel, stickLabel
   const stickTop = chinY - (chinY - noseY) * Math.min(1.2, Math.max(-0.2, ratio));
 
   return (
-    <svg className="length-figure" viewBox="0 0 300 340" role="img" aria-label={`${chin} – ${nose}`}>
+    <svg className="length-figure" viewBox="0 0 300 340" role="img" aria-label={description}>
       <defs>
-        <linearGradient id="length-floor" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={floorId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="var(--ice-floor)" />
           <stop offset="1" stopColor="var(--ice-floor)" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <rect x="0" y={floorY} width="300" height="22" fill="url(#length-floor)" />
+      <rect x="0" y={floorY} width="300" height="22" fill={`url(#${floorId})`} />
       <line x1="10" x2="290" y1={floorY} y2={floorY} className="figure-floor" />
 
       {/* Target band */}

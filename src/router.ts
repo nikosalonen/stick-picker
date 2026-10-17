@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import type { AgeGroup, Answers, Hand, Level, Position, ShotStyle } from "./logic/recommend";
+import { FLEX_OPTIONS, type AgeGroup, type Answers, type CurveId, type Hand, type Level, type Position, type Preferences, type ShotStyle } from "./logic/recommend";
+import { CURVE_ORDER } from "./data/curves";
 
 export type Route =
   | { page: "home" }
   | { page: "guide" }
   | { page: "quiz"; step: QuizStep }
-  | { page: "result"; answers: Answers | null };
+  | { page: "result"; answers: Answers | null; preferences: Preferences };
 
 export const QUIZ_STEPS = ["age", "body", "hand", "checkpoint", "level", "position", "shot"] as const;
 export type QuizStep = (typeof QUIZ_STEPS)[number];
@@ -18,7 +19,7 @@ function parse(hash: string): Route {
     const step = QUIZ_STEPS.find((s) => s === parts[1]) ?? "age";
     return { page: "quiz", step };
   }
-  if (parts[0] === "result") return { page: "result", answers: answersFromQuery(query) };
+  if (parts[0] === "result") return { page: "result", answers: answersFromQuery(query), preferences: preferencesFromQuery(query) };
   return { page: "home" };
 }
 
@@ -47,6 +48,24 @@ const SHOTS: ShotStyle[] = ["quick", "power", "unsure"];
 
 function oneOf<T extends string>(values: T[], value: string | null): T | null {
   return values.find((v) => v === value) ?? null;
+}
+
+/** Builds the result link, keeping favourites so a shared link shows the same stick. */
+export function resultHash(answers: Answers, preferences: Preferences = {}): string {
+  const params = new URLSearchParams(answersToQuery(answers));
+  if (preferences.flex !== undefined) params.set("ff", String(preferences.flex));
+  if (preferences.curve) params.set("fc", preferences.curve);
+  return `#/result?${params.toString()}`;
+}
+
+function preferencesFromQuery(query: string): Preferences {
+  const params = new URLSearchParams(query);
+  const flex = Number(params.get("ff"));
+  const curve = CURVE_ORDER.find((id) => id === params.get("fc")) as CurveId | undefined;
+  return {
+    flex: FLEX_OPTIONS.includes(flex) ? flex : undefined,
+    curve,
+  };
 }
 
 export function answersToQuery(a: Answers): string {

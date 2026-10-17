@@ -1,10 +1,10 @@
 import { scaleLinear } from "d3-scale";
 import { area, line } from "d3-shape";
-import { useState, type KeyboardEvent, type PointerEvent } from "react";
+import { useCallback, useId, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { copy } from "../../copy";
 import { useLang } from "../../i18n";
 import { SIZES, toLbs, type Recommendation, type SizeCategory } from "../../logic/recommend";
-import { TableView, Tooltip, useWidth } from "./chartKit";
+import { TableView, Tooltip, useDismissOnOutsideTap, useWidth } from "./chartKit";
 
 const LBS_PER_KG = 2.2046;
 const SHARES = { new: 0.4, team: 0.45, competitive: 0.5 };
@@ -24,6 +24,9 @@ export function FlexChart({ rec, weightKg }: Props) {
   const { t } = useLang();
   const { ref, width } = useWidth<HTMLDivElement>();
   const [hoverKg, setHoverKg] = useState<number | null>(null);
+  const uid = useId().replace(/:/g, "");
+  const clearHover = useCallback(() => setHoverKg(null), []);
+  useDismissOnOutsideTap(ref, hoverKg !== null, clearHover);
 
   const narrow = width < 480;
   const height = narrow ? 280 : 320;
@@ -55,6 +58,10 @@ export function FlexChart({ rec, weightKg }: Props) {
 
   const xTicks = [20, 40, 60, 80, 100, 120];
   const yTicks = [0, 20, 40, 60, 80, 100];
+
+  const levels = (kg: number) =>
+    `${kg} kg: ${t(copy.charts.beginner)} ${fmt(flexAt(kg, SHARES.new))}, ${t(copy.charts.team)} ${fmt(flexAt(kg, SHARES.team))}, ${t(copy.charts.competitive)} ${fmt(flexAt(kg, SHARES.competitive))}`;
+  const keyboardKg = hoverKg ?? weightKg ?? 50;
 
   const onPointer = (event: PointerEvent<SVGRectElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
@@ -98,10 +105,14 @@ export function FlexChart({ rec, weightKg }: Props) {
         ref={ref}
         className="chart-frame"
         tabIndex={0}
-        role="img"
+        role="slider"
         aria-label={t(copy.charts.flexAria)}
+        aria-valuemin={WEIGHT_DOMAIN[0]}
+        aria-valuemax={WEIGHT_DOMAIN[1]}
+        aria-valuenow={keyboardKg}
+        aria-valuetext={levels(keyboardKg)}
         onKeyDown={onKey}
-        onBlur={() => setHoverKg(null)}
+        onBlur={clearHover}
       >
         <svg width={width} height={height} aria-hidden="true">
           <g transform={`translate(${margin.left} ${margin.top})`}>
@@ -125,10 +136,10 @@ export function FlexChart({ rec, weightKg }: Props) {
               {t(copy.charts.flexAxis)}
             </text>
 
-            <clipPath id="flex-plot">
+            <clipPath id={`${uid}-plot`}>
               <rect width={innerW} height={innerH} />
             </clipPath>
-            <g clipPath="url(#flex-plot)">
+            <g clipPath={`url(#${uid}-plot)`}>
               <path d={bandPath} className="chart-band" />
               <path d={midPath} className="chart-line" />
             </g>
@@ -185,12 +196,13 @@ export function FlexChart({ rec, weightKg }: Props) {
                       y1={y(rec.flex) - 8}
                       y2={y(rec.flexAfterCut) + 10}
                       className="chart-arrow"
-                      markerEnd="url(#flex-arrow)"
+                      markerEnd={`url(#${uid}-arrow)`}
                     />
                   </>
                 )}
                 <circle cx={x(playerKg)} cy={y(rec.flexAfterCut)} r="8" className="chart-dot-ring" />
                 <circle cx={x(playerKg)} cy={y(rec.flexAfterCut)} r="6" className="chart-dot" />
+                {!narrow && (
                 <PlayerCallout
                   x={x(playerKg)}
                   y={y(rec.flexAfterCut)}
@@ -201,6 +213,7 @@ export function FlexChart({ rec, weightKg }: Props) {
                     showCut ? t(copy.charts.afterCut(rec.flexAfterCut)) : "",
                   ].filter(Boolean)}
                 />
+                )}
               </g>
             )}
 
@@ -217,7 +230,7 @@ export function FlexChart({ rec, weightKg }: Props) {
             )}
 
             <defs>
-              <marker id="flex-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <marker id={`${uid}-arrow`} viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M0 0 L10 5 L0 10 Z" className="chart-arrow-head" />
               </marker>
             </defs>
@@ -227,7 +240,8 @@ export function FlexChart({ rec, weightKg }: Props) {
               fill="transparent"
               onPointerMove={onPointer}
               onPointerDown={onPointer}
-              onPointerLeave={() => setHoverKg(null)}
+              // Touch keeps the value after the finger lifts; a tap outside clears it.
+              onPointerLeave={(event) => event.pointerType === "mouse" && setHoverKg(null)}
             />
           </g>
         </svg>
@@ -245,8 +259,15 @@ export function FlexChart({ rec, weightKg }: Props) {
           />
         )}
       </div>
+      {narrow && rec && (
+        <p className="chart-readout">
+          <span className="chart-readout-dot" aria-hidden="true" />
+          <strong>{t(copy.charts.yourStick)}:</strong>{" "}
+          {rec.flexAfterCut - rec.flex >= 2 ? `${t(copy.charts.onLabel(rec.flex))}. ${t(copy.charts.afterCut(rec.flexAfterCut))}.` : `Flex ${rec.flex}.`}
+        </p>
+      )}
       <p className="chart-hint">{t(copy.charts.hoverHint)}</p>
-      <TableView summary={t(copy.charts.showTable)}>
+      <TableView summary={t(copy.charts.showTable)} label={t(copy.charts.flexTitle)}>
         <table className="size-table">
           <thead>
             <tr>
@@ -281,7 +302,8 @@ function PlayerCallout({ x, y, innerW, title, lines }: { x: number; y: number; i
   // Roughly 6.6 px per character at 12 px; wide enough for the longest line.
   const boxW = Math.max(130, Math.max(title.length, ...lines.map((l) => l.length)) * 7 + 24);
   const boxH = 22 + lines.length * 17;
-  const left = x + 16 + boxW > innerW ? x - 16 - boxW : x + 16;
+  const preferred = x + 16 + boxW > innerW ? x - 16 - boxW : x + 16;
+  const left = Math.max(0, Math.min(innerW - boxW, preferred));
   const top = Math.max(0, y - boxH - 6);
   return (
     <g className="chart-callout" transform={`translate(${left} ${top})`}>

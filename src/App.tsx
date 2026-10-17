@@ -36,7 +36,7 @@ export function App() {
       {route.page === "home" && <Home />}
       {route.page === "guide" && <Guide />}
       {route.page === "quiz" && <Quiz step={route.step} />}
-      {route.page === "result" && <Result answers={route.answers} />}
+      {route.page === "result" && <Result answers={route.answers} preferences={route.preferences} />}
 
       {route.page !== "quiz" && (
         <footer className="footer">

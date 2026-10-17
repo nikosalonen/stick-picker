@@ -1,9 +1,10 @@
+import { useReducedMotion } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { copy } from "../copy";
 import { BRANDS, KICK_ORDER } from "../data/brands";
-import { CURVES } from "../data/curves";
+import { CURVE_ORDER, CURVES, rateCurve, type Verdict } from "../data/curves";
 import { useLang } from "../i18n";
-import { SIZES, toInches, type Answers, type CurveId, type Recommendation, type SizeCategory } from "../logic/recommend";
+import { SIZES, toInches, type Answers, type Recommendation, type SizeCategory } from "../logic/recommend";
 import { BladeTopDown, FaceIcon } from "./art/BladeTopDown";
 import { FlexBench } from "./art/FlexBench";
 import { KickGlyph, KickShot } from "./art/KickShot";
@@ -57,6 +58,7 @@ export function LengthSection({ rec, answers }: Props) {
           nose={t(copy.explain.nose)}
           heightLabel={answers ? `${answers.heightCm} cm` : undefined}
           stickLabel={rec ? `≈ ${rec.lengthCm} cm` : undefined}
+          description={t(copy.explain.lengthFigureAlt)}
         />
       }
     >
@@ -118,9 +120,12 @@ export function FlexSection({ rec, answers }: Props) {
 export function KickSection({ rec }: Props) {
   const { t } = useLang();
   const [shotToken, setShotToken] = useState(0);
+  // With reduced motion the sticks stay still, so there is nothing to play.
+  const reduceMotion = useReducedMotion();
   return (
     <Section id="kick" title={t(copy.explain.kickTitle)}>
       <p>{t(copy.explain.kickBody)}</p>
+      {!reduceMotion && (
       <div className="kick-play">
         <button className="button" onClick={() => setShotToken((n) => n + 1)}>
           <span className="button-icon" aria-hidden="true">
@@ -132,6 +137,7 @@ export function KickSection({ rec }: Props) {
         </button>
         <span className="small muted">{t(copy.explain.playShotsHint)}</span>
       </div>
+      )}
       <div className="kick-options">
         {KICK_ORDER.map((kick) => (
           <article key={kick} className="kick-option" data-match={rec?.kick === kick || undefined}>
@@ -149,58 +155,99 @@ export function KickSection({ rec }: Props) {
   );
 }
 
-export function CurveSection({ rec }: Props) {
+export function CurveSection({ rec, answers }: Props) {
   const { t } = useLang();
-  const ids: CurveId[] = rec ? [rec.curve, ...rec.curveAlternatives] : ["P92", "P88", "P28", "P14"];
+  const rated = CURVE_ORDER.map((id) => ({ id, ...rateCurve(id, answers) }));
+  // The player's curve leads its group.
+  const ordered = rec ? [...rated].sort((a, b) => Number(b.id === rec.curve) - Number(a.id === rec.curve)) : rated;
+  const groups: { verdict: Verdict; title: string }[] = [
+    { verdict: "recommended", title: t(answers ? copy.explain.groupRecommended : copy.explain.groupRecommendedGeneral) },
+    { verdict: "fine", title: t(copy.explain.groupFine) },
+    { verdict: "notRecommended", title: t(answers ? copy.explain.groupNot : copy.explain.groupNotGeneral) },
+  ];
   return (
     <Section id="curve" title={t(copy.explain.curveTitle)}>
       <p>{t(copy.explain.curveBody)}</p>
       <p className="note">{t(copy.explain.curveTip)}</p>
-      <div className="curves">
-        {ids.map((id, index) => {
-          const curve = CURVES[id];
-          const isPick = Boolean(rec && index === 0);
-          return (
-            <article key={id} className="curve-card" data-match={isPick || undefined}>
-              <header>
-                <h3>{id}</h3>
-                {isPick && <span className="match-badge">{t(copy.explain.recommended)}</span>}
-              </header>
-              <BladeTopDown curve={curve} heel={t(copy.explain.heel)} toe={t(copy.explain.toe)} accent={isPick} />
-              <p>{t(curve.summary)}</p>
-              <dl className="facts">
-                <div>
-                  <dt>{t(copy.explain.location)}</dt>
-                  <dd>{t(curve.location)}</dd>
-                </div>
-                <div>
-                  <dt>{t(copy.explain.face)}</dt>
-                  <dd className="face-fact">
-                    <FaceIcon face={curve.faceKind} />
-                    {t(curve.face)}
-                  </dd>
-                </div>
-                <div>
-                  <dt>{t(copy.explain.lie)}</dt>
-                  <dd>{curve.lie}</dd>
-                </div>
-              </dl>
-              <p className="muted small">
-                {t(copy.explain.sameAs)}: {curve.sameAs}
-              </p>
-              <p className={curve.beginnerFriendly ? "tag tag-good" : "tag"}>
-                {t(curve.beginnerFriendly ? copy.explain.beginner : copy.explain.notBeginner)}
-              </p>
-            </article>
-          );
-        })}
-      </div>
+      {groups.map((group) => {
+        const curves = ordered.filter((c) => c.verdict === group.verdict);
+        if (curves.length === 0) return null;
+        return (
+          <div key={group.verdict} className="curve-group" data-verdict={group.verdict}>
+            <h3 className="curve-group-title">
+              <VerdictIcon verdict={group.verdict} />
+              {group.title}
+            </h3>
+            <div className="curves">
+              {curves.map(({ id, verdict, reason }) => {
+                const curve = CURVES[id];
+                const isPick = Boolean(rec && rec.curve === id);
+                const badge = isPick ? t(rec?.favourite.curve ? copy.explain.yourPick : copy.explain.ourPick) : null;
+                return (
+                  <article key={id} className="curve-card" data-match={isPick || undefined} data-verdict={verdict}>
+                    <header>
+                      <h4>{id}</h4>
+                      {badge && <span className="match-badge">{badge}</span>}
+                    </header>
+                    <BladeTopDown curve={curve} heel={t(copy.explain.heel)} toe={t(copy.explain.toe)} accent={isPick} />
+                    <p>{t(curve.summary)}</p>
+                    <p className="verdict-reason" data-verdict={verdict}>
+                      <VerdictIcon verdict={verdict} />
+                      <span>
+                        <strong>{t(copy.explain.verdicts[verdict])}.</strong> {t(reason)}
+                      </span>
+                    </p>
+                    <dl className="facts">
+                      <div>
+                        <dt>{t(copy.explain.location)}</dt>
+                        <dd>{t(curve.location)}</dd>
+                      </div>
+                      <div>
+                        <dt>{t(copy.explain.depth)}</dt>
+                        <dd>{t(curve.depthLabel)}</dd>
+                      </div>
+                      <div>
+                        <dt>{t(copy.explain.face)}</dt>
+                        <dd className="face-fact">
+                          <FaceIcon face={curve.faceKind} />
+                          {t(curve.face)}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>{t(copy.explain.lie)}</dt>
+                        <dd>{curve.lie}</dd>
+                      </div>
+                    </dl>
+                    <p className="muted small">
+                      {t(copy.explain.sameAs)}: {curve.sameAs}
+                    </p>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+      <p className="small muted">{t(copy.explain.curveListNote)}</p>
       <details className="more">
         <summary>{t(copy.explain.lieQuestion)}</summary>
         <p>{t(copy.explain.lieBody)}</p>
         <p>{t(copy.explain.faceBody)}</p>
       </details>
     </Section>
+  );
+}
+
+/** A small check, dot or cross that repeats the verdict next to its text. */
+export function VerdictIcon({ verdict }: { verdict: Verdict }) {
+  return (
+    <span className="verdict-icon" data-verdict={verdict} aria-hidden="true">
+      <svg viewBox="0 0 16 16">
+        {verdict === "recommended" && <path d="M3.5 8.5 L6.5 11.5 L12.5 4.5" />}
+        {verdict === "fine" && <path d="M4.5 8 H11.5" />}
+        {verdict === "notRecommended" && <path d="M4.5 4.5 L11.5 11.5 M11.5 4.5 L4.5 11.5" />}
+      </svg>
+    </span>
   );
 }
 
@@ -363,7 +410,7 @@ export function SizeChartSection({ rec, answers }: Props) {
 function SizeTable() {
   const { t } = useLang();
   return (
-      <TableView summary={t(copy.charts.showTable)}>
+      <TableView summary={t(copy.charts.showTable)} label={t(copy.explain.sizesTitle)}>
         <table className="size-table">
           <thead>
             <tr>

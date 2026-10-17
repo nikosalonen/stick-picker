@@ -1,9 +1,9 @@
 import { scaleBand, scaleLinear } from "d3-scale";
-import { useState, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { copy } from "../../copy";
 import { useLang } from "../../i18n";
 import { SIZES, type SizeCategory } from "../../logic/recommend";
-import { Tooltip, useWidth } from "./chartKit";
+import { Tooltip, useDismissOnOutsideTap, useWidth } from "./chartKit";
 
 const SIZE_ORDER: SizeCategory[] = ["youth", "junior", "intermediate", "senior"];
 const HEIGHT_DOMAIN: [number, number] = [90, 210];
@@ -16,6 +16,8 @@ export function SizeChart({ heightCm, size, table }: { heightCm?: number; size?:
   const { t } = useLang();
   const { ref, width } = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<SizeCategory | null>(null);
+  const clearHover = useCallback(() => setHover(null), []);
+  useDismissOnOutsideTap(ref, hover !== null, clearHover);
 
   const narrow = width < 480;
   const margin = { top: heightCm ? 34 : 10, right: 16, bottom: 44, left: narrow ? 46 : 112 };
@@ -64,11 +66,12 @@ export function SizeChart({ heightCm, size, table }: { heightCm?: number; size?:
                   key={s}
                   tabIndex={0}
                   role="img"
-                  aria-label={`${t(copy.sizes[s])}: ${from}–${to} cm`}
+                  aria-label={`${t(copy.sizes[s])}: ${t(copy.explain.colHeight)} ${from}–${to} cm, ${t(copy.explain.colAge)} ${t(copy.explain.sizeAges[s])}, ${t(copy.explain.colLength)} ${SIZES[s].stockLengthsIn[0]}–${SIZES[s].stockLengthsIn[SIZES[s].stockLengthsIn.length - 1]}", flex ${SIZES[s].flexes[0]}–${SIZES[s].flexes[SIZES[s].flexes.length - 1]}`}
                   className="chart-bar-group"
                   data-hover={highlight === s || undefined}
                   onPointerEnter={() => setHover(s)}
-                  onPointerLeave={() => setHover(null)}
+                  onPointerLeave={(event) => event.pointerType === "mouse" && setHover(null)}
+                  onPointerDown={() => setHover(s)}
                   onFocus={() => setHover(s)}
                   onBlur={() => setHover(null)}
                 >

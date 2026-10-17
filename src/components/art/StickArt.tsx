@@ -12,6 +12,8 @@ type Props = {
   title: string;
   /** Slide the stick in once when it first appears. */
   animateIn?: boolean;
+  /** Names of the printed parts, for screen readers. */
+  partNames?: Record<LabelPart, string>;
 };
 
 // Where each printed value sits along the shaft, in viewBox units.
@@ -37,7 +39,7 @@ const BLADE =
  * A composite hockey stick drawn side-on, with the spec printed along the shaft
  * like a real label. Each printed value is a button when `onSelect` is given.
  */
-export function StickArt({ values, active, onSelect, title, animateIn = false }: Props) {
+export function StickArt({ values, active, onSelect, title, animateIn = false, partNames }: Props) {
   const uid = useId().replace(/:/g, "");
   const reduceMotion = useReducedMotion();
   const id = (name: string) => `${uid}-${name}`;
@@ -174,7 +176,7 @@ export function StickArt({ values, active, onSelect, title, animateIn = false }:
               role="button"
               tabIndex={0}
               aria-pressed={isActive}
-              aria-label={`${part}: ${values[part]}`}
+              aria-label={`${partNames?.[part] ?? part}: ${values[part]}`}
               className="stick-art-part"
               onClick={() => onSelect(part)}
               onKeyDown={(event) => {

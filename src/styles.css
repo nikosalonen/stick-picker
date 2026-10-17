@@ -1178,6 +1178,20 @@ input[type="range"]::-moz-range-thumb {
   fill: var(--chart-band-key);
 }
 
+.chart-readout {
+  margin: 10px 0 0;
+  font-size: 0.92rem;
+}
+
+.chart-readout-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--chart-red);
+}
+
 .chart-hint {
   margin: 10px 0 0;
   font-size: 0.85rem;
@@ -1191,6 +1205,7 @@ input[type="range"]::-moz-range-thumb {
 
 .chart-tooltip {
   position: absolute;
+  transform: translateY(-50%);
   z-index: 2;
   min-width: 150px;
   padding: 10px 12px;
@@ -1682,14 +1697,6 @@ input[type="range"]::-moz-range-thumb {
   gap: 8px;
 }
 
-.curve-card h3 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 2rem;
-  line-height: 1;
-}
-
 .curve-card > p {
   font-size: 0.95rem;
 }
@@ -1770,9 +1777,8 @@ input[type="range"]::-moz-range-thumb {
 
 .facts {
   display: grid;
-  grid-template-columns: repeat(3, auto);
-  justify-content: space-between;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
   margin: 0 0 10px;
 }
 
@@ -1867,6 +1873,145 @@ input[type="range"]::-moz-range-thumb {
 .tip-art {
   width: 92px;
   height: auto;
+}
+
+/* Curve groups and verdicts */
+
+.curve-group {
+  margin-top: 28px;
+}
+
+.curve-group-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.curve-group .curves {
+  margin-top: 12px;
+}
+
+.curve-card h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.curve-card[data-verdict="notRecommended"] .blade-top {
+  opacity: 0.7;
+}
+
+.verdict-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--good);
+}
+
+.verdict-icon[data-verdict="fine"] {
+  background: var(--blue);
+}
+
+.verdict-icon[data-verdict="notRecommended"] {
+  background: var(--red);
+}
+
+.verdict-icon svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--surface);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.verdict-reason {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  border-radius: var(--radius-sm);
+  background: var(--good-soft);
+}
+
+.verdict-reason[data-verdict="fine"] {
+  background: var(--blue-soft);
+}
+
+.verdict-reason[data-verdict="notRecommended"] {
+  background: var(--red-soft);
+}
+
+.verdict-reason .verdict-icon {
+  margin-top: 1px;
+}
+
+/* Favourites */
+
+.favourites {
+  margin-top: 20px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.favourites summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+.favourites[open] summary {
+  margin-bottom: 8px;
+}
+
+.favourites-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.field select {
+  min-height: 48px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 400;
+  color: var(--ink);
+  background: var(--ice);
+  border: 2px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.field select:hover {
+  border-color: var(--blue);
+}
+
+.shopping-note[data-warn] {
+  margin-top: 4px;
+  padding: 6px 10px;
+  color: var(--ink);
+  background: var(--red-soft);
+  border-left: 3px solid var(--red);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 /* Brand table extras */

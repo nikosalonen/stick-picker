@@ -44,7 +44,7 @@ export function Home() {
         <h2 id="decoder-title">{t(copy.home.decoderTitle)}</h2>
         <p className="muted">{t(copy.home.decoderLead)}</p>
         <div className="decoder-stick">
-          <StickArt values={EXAMPLE} active={active} onSelect={setActive} title={t(copy.home.decoderTitle)} animateIn />
+          <StickArt values={EXAMPLE} active={active} onSelect={setActive} title={t(copy.home.decoderTitle)} partNames={titles} animateIn />
         </div>
         <div className="decoder-tabs" role="tablist" aria-label={t(copy.home.decoderTitle)}>
           {LABEL_PARTS.map((part) => (

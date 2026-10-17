@@ -1,14 +1,15 @@
 import { motion, useMotionValue, useReducedMotion, useSpring, useTransform, type MotionValue } from "motion/react";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useId, useState, type CSSProperties } from "react";
 
 const SUPPORT_L = 34;
 const SUPPORT_R = 306;
 const SPAN = SUPPORT_R - SUPPORT_L;
 const BEAM_Y = 40;
 const OVERHANG = 18;
-// Drawing scale: pixels per centimetre of bend. Real bends are small, so they are exaggerated.
-const PX_PER_CM = 9;
-const MAX_SAG = 52;
+// Real bends are small, so the drawing exaggerates them. The curve flattens out for big
+// bends but keeps growing, so a bigger bend always looks bigger.
+const MAX_SAG = 54;
+const drawnSag = (bendCm: number) => MAX_SAG * (1 - Math.exp(-bendCm / 3.5));
 
 /**
  * Shape of a beam on two supports, pushed down in the middle: 0 at the supports, 1 in the middle.
@@ -40,7 +41,8 @@ function useSag(targetPx: number): MotionValue<number> {
 
 function Bench({ flex, pushLbs, accent, label }: { flex: number; pushLbs: number; accent: boolean; label: string }) {
   const bendCm = (pushLbs / flex) * 2.54;
-  const sag = useSag(Math.min(MAX_SAG, bendCm * PX_PER_CM));
+  const sag = useSag(drawnSag(bendCm));
+  const markerId = `${useId().replace(/:/g, "")}-arrow`;
   const d = useTransform(sag, beamPath);
   const pressY = useTransform(sag, (s) => BEAM_Y + s - 4);
   const dimY = useTransform(sag, (s) => BEAM_Y + s + 5);
@@ -56,19 +58,21 @@ function Bench({ flex, pushLbs, accent, label }: { flex: number; pushLbs: number
         {[SUPPORT_L, SUPPORT_R].map((x) => (
           <path key={x} d={`M${x} ${BEAM_Y + 6} L${x + 9} ${BEAM_Y + 22} L${x - 9} ${BEAM_Y + 22} Z`} className="bench-support" />
         ))}
-        <line x1="10" x2="330" y1={BEAM_Y + 22.5} y2={BEAM_Y + 22.5} className="bench-base" />
+        {[SUPPORT_L, SUPPORT_R].map((x) => (
+          <line key={x} x1={x - 16} x2={x + 16} y1={BEAM_Y + 22.5} y2={BEAM_Y + 22.5} className="bench-base" />
+        ))}
         {/* Shaft */}
         <motion.path d={d} className="bench-shaft" />
         <motion.path d={d} className="bench-shaft-gloss" />
         {/* Press with force arrow */}
         <motion.g style={{ y: pressY }}>
           <rect x={mid - 14} y={-12} width="28" height="9" rx="2.5" className="bench-press" />
-          <line x1={mid} x2={mid} y1={-14 - arrowLen} y2={-16} className="bench-force" markerEnd="url(#bench-arrow)" />
+          <line x1={mid} x2={mid} y1={-14 - arrowLen} y2={-16} className="bench-force" markerEnd={`url(#${markerId})`} />
         </motion.g>
         {/* Bend measurement */}
         <motion.line x1={mid + 24} x2={mid + 24} y1={BEAM_Y + 5} y2={dimY} className="bench-dim" />
         <defs>
-          <marker id="bench-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+          <marker id={markerId} viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto">
             <path d="M0 0 L10 5 L0 10 Z" className="bench-force-head" />
           </marker>
         </defs>

@@ -97,3 +97,32 @@ describe("recommend", () => {
     expect(defense.flex).toBeGreaterThanOrEqual(forward.flex);
   });
 });
+
+describe("favourites", () => {
+  it("keeps a favourite flex and reports how it feels against the target", () => {
+    const rec = recommend(adult, { flex: 102 });
+    expect(rec.flex).toBe(102);
+    expect(rec.favourite.flex).toBe(true);
+    expect(rec.suggested.flex).toBeLessThan(102);
+    expect(rec.flexFit).toBe("stiffer");
+  });
+
+  it("moves to the size that sells the favourite flex", () => {
+    const rec = recommend(kid, { flex: 60 });
+    expect(rec.suggested.size).toBe("junior");
+    expect(rec.size).toBe("intermediate");
+    expect(rec.flex).toBe(60);
+  });
+
+  it("uses a favourite curve but still lists our pick as an alternative", () => {
+    const rec = recommend(adult, { curve: "P28" });
+    expect(rec.curve).toBe("P28");
+    expect(rec.suggested.curve).toBe("P92");
+    expect(rec.curveAlternatives).toContain("P92");
+  });
+
+  it("ignores a flex no shop sells", () => {
+    const rec = recommend(adult, { flex: 63 });
+    expect(rec.favourite.flex).toBe(false);
+  });
+});

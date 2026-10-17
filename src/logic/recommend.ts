@@ -16,7 +16,10 @@ export type Answers = {
 
 export type SizeCategory = "youth" | "junior" | "intermediate" | "senior";
 export type KickPoint = "low" | "hybrid" | "mid";
-export type CurveId = "P92" | "P88" | "P28" | "P14";
+export type CurveId = "P92" | "P88" | "P90TM" | "P28" | "W71" | "P30" | "P02";
+
+/** What the player already knows they like. Both are optional. */
+export type Preferences = { flex?: number; curve?: CurveId };
 
 export type Recommendation = {
   size: SizeCategory;
@@ -40,6 +43,14 @@ export type Recommendation = {
   hand: Hand;
   /** True when the player is small or new enough that kick point barely matters. */
   kickMatters: boolean;
+  /** The flex the player should feel after cutting, from body weight and level. */
+  targetFlex: number;
+  /** What we would pick without the player's favourites. */
+  suggested: { size: SizeCategory; flex: number; curve: CurveId };
+  /** Which values come from the player's favourites instead of our pick. */
+  favourite: { flex: boolean; curve: boolean };
+  /** How the stick feels compared with the target: much stiffer, much softer or about right. */
+  flexFit: "good" | "stiffer" | "softer";
 };
 
 export const CM_PER_INCH = 2.54;
@@ -55,6 +66,15 @@ export const SIZES: Record<SizeCategory, { heightCm: [number, number]; stockLeng
   intermediate: { heightCm: [150, 170], stockLengthsIn: [54, 57], flexes: [55, 60, 65] },
   senior: { heightCm: [165, 205], stockLengthsIn: [60, 62], flexes: [70, 75, 77, 80, 85, 87, 95, 102] },
 };
+
+// Sizes ordered smallest first; used when a favourite flex is only sold in another size.
+const SIZE_ORDER: SizeCategory[] = ["youth", "junior", "intermediate", "senior"];
+
+/** Flex values a shop sells, across all sizes, softest first. */
+export const FLEX_OPTIONS: number[] = [...new Set(SIZE_ORDER.flatMap((size) => SIZES[size].flexes))].sort((a, b) => a - b);
+
+/** How far (in flex points) the felt flex may be from the target before we warn. */
+const FLEX_WARNING_GAP = 12;
 
 /** Cutting a stick makes it stiffer: roughly 3–5 flex points per inch cut. */
 export const FLEX_PER_INCH_CUT = 4;
@@ -80,14 +100,15 @@ function nearest(values: number[], target: number): number {
 function pickCurve(answers: Answers): { curve: CurveId; alternatives: CurveId[] } {
   const young = answers.age === "under7" || answers.age === "7to9";
   if (young || answers.level === "new") return { curve: "P88", alternatives: ["P92"] };
-  if (answers.shot === "quick" && answers.position !== "defense") return { curve: "P92", alternatives: ["P28", "P88"] };
-  if (answers.position === "defense") return { curve: "P92", alternatives: ["P88", "P14"] };
+  if (answers.shot === "quick" && answers.position !== "defense") return { curve: "P92", alternatives: ["P28", "P90TM"] };
+  if (answers.position === "defense") return { curve: "P92", alternatives: ["P88", "P30"] };
   return { curve: "P92", alternatives: ["P88"] };
 }
 
 type SizeFit = { size: SizeCategory; stockLengthIn: number; cutCm: number; flex: number; flexAfterCut: number };
 
-function fitSize(size: SizeCategory, lengthCm: number, targetFlex: number): SizeFit {
+/** Fits a size to the player. Without `fixedFlex`, picks the label flex that feels closest to the target. */
+function fitSize(size: SizeCategory, lengthCm: number, targetFlex: number, fixedFlex?: number): SizeFit {
   const { stockLengthsIn, flexes } = SIZES[size];
   // Buy the shortest stock length that is still long enough; the shop cuts the rest.
   const lengthIn = lengthCm / CM_PER_INCH;
@@ -95,8 +116,22 @@ function fitSize(size: SizeCategory, lengthCm: number, targetFlex: number): Size
   const cutCm = Math.max(0, Math.round(stockLengthIn * CM_PER_INCH - lengthCm));
   const flexAdded = (cutCm / CM_PER_INCH) * FLEX_PER_INCH_CUT;
   // The label flex is measured on the uncut stick, so pick a softer label to make up for the cut.
-  const flex = nearest(flexes, targetFlex - flexAdded);
+  const flex = fixedFlex ?? nearest(flexes, targetFlex - flexAdded);
   return { size, stockLengthIn, cutCm, flex, flexAfterCut: Math.round(flex + flexAdded) };
+}
+
+/**
+ * Keeps the player's favourite flex. If the suggested size isn't sold in that flex,
+ * moves to the nearest size that is.
+ */
+function fitFavouriteFlex(suggested: SizeCategory, lengthCm: number, targetFlex: number, flex: number): SizeFit {
+  if (SIZES[suggested].flexes.includes(flex)) return fitSize(suggested, lengthCm, targetFlex, flex);
+  const from = SIZE_ORDER.indexOf(suggested);
+  const sold = SIZE_ORDER.filter((size) => SIZES[size].flexes.includes(flex));
+  const closest = sold.reduce((best, size) =>
+    Math.abs(SIZE_ORDER.indexOf(size) - from) < Math.abs(SIZE_ORDER.indexOf(best) - from) ? size : best,
+  );
+  return fitSize(closest, lengthCm, targetFlex, flex);
 }
 
 /**
@@ -115,7 +150,7 @@ export function pickSizeAndFlex(lengthCm: number, targetFlex: number): SizeFit {
   );
 }
 
-export function recommend(answers: Answers): Recommendation {
+export function recommend(answers: Answers, preferences: Preferences = {}): Recommendation {
   const chin = answers.heightCm * CHIN_RATIO;
   const nose = answers.heightCm * NOSE_RATIO;
   // Shorter is easier to control, so beginners and forwards aim near the chin.
@@ -123,7 +158,12 @@ export function recommend(answers: Answers): Recommendation {
   const towardNose = answers.position === "defense" ? 0.6 : answers.level === "new" ? 0.1 : 0.3;
   const lengthCm = Math.round(chin + (nose - chin) * towardNose);
   const targetFlex = answers.weightKg * LBS_PER_KG * flexShare(answers);
-  const fit = pickSizeAndFlex(lengthCm, targetFlex);
+  const suggestedFit = pickSizeAndFlex(lengthCm, targetFlex);
+  const favouriteFlex = preferences.flex !== undefined && FLEX_OPTIONS.includes(preferences.flex) ? preferences.flex : undefined;
+  const fit =
+    favouriteFlex === undefined ? suggestedFit : fitFavouriteFlex(suggestedFit.size, lengthCm, targetFlex, favouriteFlex);
+  const gap = fit.flexAfterCut - targetFlex;
+  const flexFit = gap > FLEX_WARNING_GAP ? "stiffer" : gap < -FLEX_WARNING_GAP ? "softer" : "good";
 
   const index = SIZES[fit.size].flexes.indexOf(fit.flex);
   const flexRange: [number, number] = [SIZES[fit.size].flexes[Math.max(0, index - 1)], fit.flex];
@@ -137,10 +177,16 @@ export function recommend(answers: Answers): Recommendation {
         ? "mid"
         : "hybrid";
 
-  const { curve, alternatives } = pickCurve(answers);
+  const picked = pickCurve(answers);
+  const curve = preferences.curve ?? picked.curve;
+  const alternatives = [picked.curve, ...picked.alternatives].filter((id) => id !== curve).slice(0, 2);
 
   return {
     ...fit,
+    targetFlex: Math.round(targetFlex),
+    suggested: { size: suggestedFit.size, flex: suggestedFit.flex, curve: picked.curve },
+    favourite: { flex: favouriteFlex !== undefined, curve: preferences.curve !== undefined },
+    flexFit,
     lengthCm,
     lengthRangeCm: [Math.round(chin), Math.round(nose)],
     flexRange,

@@ -185,6 +185,34 @@ export const copy = {
     ),
     whyTitle: t("Why these numbers", "Miksi juuri nämä"),
     why: t("Why?", "Miksi?"),
+    favTitle: t("Already have a favourite flex or curve?", "Onko jo suosikkijäykkyys tai -lapa?"),
+    favBody: t(
+      "Pick it here and the list above updates. Most new players can skip this.",
+      "Valitse se tästä, niin lista yllä päivittyy. Useimmat aloittelijat voivat ohittaa tämän.",
+    ),
+    favFlex: t("Favourite flex", "Suosikkijäykkyys"),
+    favCurve: t("Favourite curve", "Suosikkilapa"),
+    useSuggestion: (value: string) => t(`Use our suggestion (${value})`, `Käytä ehdotustamme (${value})`),
+    clearFavourites: t("Clear favourites", "Poista suosikit"),
+    yourPick: t("your pick", "oma valinta"),
+    weSuggested: (value: string) => t(`We suggested ${value}`, `Ehdotimme ${value}`),
+    warnStiffer: (after: number, target: number) =>
+      t(
+        `After cutting it feels like about ${after}, but we'd aim for about ${target}. That is much stiffer: a stick that is too stiff is hard to bend, so shots get weaker.`,
+        `Lyhennettynä se tuntuu noin ${after}:ltä, kun tavoite on noin ${target}. Se on selvästi jäykempi: liian jäykkää mailaa on vaikea taivuttaa, joten laukaukset heikkenevät.`,
+      ),
+    warnSofter: (after: number, target: number) =>
+      t(
+        `After cutting it feels like about ${after}, but we'd aim for about ${target}. That is much softer: fine for learning, but hard shots can feel whippy.`,
+        `Lyhennettynä se tuntuu noin ${after}:ltä, kun tavoite on noin ${target}. Se on selvästi pehmeämpi: käy oppimiseen, mutta kovat laukaukset voivat tuntua veltoilta.`,
+      ),
+    flexGood: (after: number, target: number) =>
+      t(
+        `After cutting it feels like about ${after}. That is close to the ${target} we'd aim for.`,
+        `Lyhennettynä se tuntuu noin ${after}:ltä. Se on lähellä tavoitetta ${target}.`,
+      ),
+    sizeChanged: (flex: number, size: string) =>
+      t(`Flex ${flex} is sold as ${size} sticks, so the size changed too.`, `Flex ${flex} myydään ${size}-mailoina, joten myös koko vaihtui.`),
   },
 
   sizes: {
@@ -273,6 +301,10 @@ export const copy = {
           ? `Sinun mailasi: osta ${stock}" ja lyhennä noin ${cm} cm:iin (${inches}"). Lyhennettävää on noin ${cut} cm.`
           : `Sinun mailasi: noin ${cm} cm (${inches}"). ${stock}" maila sopii lyhentämättä.`,
       ),
+    lengthFigureAlt: t(
+      "A player standing in shoes with the stick upright on the tip of its blade. The top of the stick reaches between the chin and the nose.",
+      "Pelaaja seisoo kengät jalassa ja maila on pystyssä lavan kärjen varassa. Mailan pää ulottuu leuan ja nenän väliin.",
+    ),
     tooShort: t("Too short", "Liian lyhyt"),
     justRight: t("Just right", "Sopiva"),
     tooLong: t("Too long", "Liian pitkä"),
@@ -314,6 +346,23 @@ export const copy = {
     sameAs: t("Same curve at other brands", "Sama lapa muilla merkeillä"),
     beginner: t("Good for beginners", "Sopii aloittelijalle"),
     recommended: t("Recommended", "Suositus"),
+    ourPick: t("Our pick", "Meidän valinta"),
+    yourPick: t("Your pick", "Oma valinta"),
+    verdicts: {
+      recommended: t("Recommended", "Suositeltu"),
+      fine: t("Also fine", "Käy myös"),
+      notRecommended: t("Not recommended", "Ei suositella"),
+    },
+    groupRecommended: t("Recommended for this player", "Suositellaan tälle pelaajalle"),
+    groupRecommendedGeneral: t("Good for most players", "Sopii useimmille"),
+    groupFine: t("Also fine", "Käy myös"),
+    groupNot: t("Not recommended for this player", "Ei suositella tälle pelaajalle"),
+    groupNotGeneral: t("Usually not the best choice", "Yleensä ei paras valinta"),
+    depth: t("Depth", "Syvyys"),
+    curveListNote: t(
+      "Shops may show other codes too, like pro curves or older models. Ask how they compare to P92 or P88.",
+      "Kaupoissa voi näkyä muitakin koodeja, kuten pelaajien omia lapoja tai vanhoja malleja. Kysy, miten ne vertautuvat P92:een tai P88:aan.",
+    ),
     notBeginner: t("Better for experienced players", "Kokeneemmille"),
     lie: t("Lie", "Lie"),
     lieBody: t(
@@ -405,8 +454,8 @@ export const copy = {
     onLabel: (flex: number) => t(`Label says ${flex}`, `Tarrassa ${flex}`),
     afterCut: (flex: number) => t(`Feels like ${flex} after cutting`, `Lyhennettynä noin ${flex}`),
     hoverHint: t(
-      "Move over the chart (or use the arrow keys) to read any weight. The bars on the right show the flex each size is sold in.",
-      "Liiku kaavion päällä (tai käytä nuolinäppäimiä) nähdäksesi minkä tahansa painon. Oikean reunan palkit näyttävät, missä jäykkyyksissä kutakin kokoa myydään.",
+      "Point at or tap the chart (or use the arrow keys) to read any weight. The bars on the right show the flex each size is sold in.",
+      "Osoita tai napauta kaaviota (tai käytä nuolinäppäimiä) nähdäksesi minkä tahansa painon. Oikean reunan palkit näyttävät, missä jäykkyyksissä kutakin kokoa myydään.",
     ),
     showTable: t("Show as a table", "Näytä taulukkona"),
     sizeTitle: t("Stick size by player height", "Mailan koko pelaajan pituuden mukaan"),
