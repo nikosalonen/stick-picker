@@ -13,7 +13,7 @@ import {
   type Position,
   type ShotStyle,
 } from "../logic/recommend";
-import { answersToQuery, go, QUIZ_STEPS, type QuizStep } from "../router";
+import { navigate, pathTo, QUIZ_STEPS, resultPath, type QuizStep } from "../router";
 import { holdingViewBox, HoldingPlayer } from "../components/art/Player";
 import { BroomTip } from "../components/Sections";
 
@@ -56,7 +56,7 @@ function complete(draft: Draft): Answers {
 const QUESTION_STEPS: QuizStep[] = QUIZ_STEPS.filter((s) => s !== "checkpoint");
 
 export function Quiz({ step }: { step: QuizStep }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [draft, setDraft] = useState<Draft>(loadDraft);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
@@ -65,8 +65,8 @@ export function Quiz({ step }: { step: QuizStep }) {
   useEffect(() => headingRef.current?.focus(), [step]);
 
   const update = (patch: Draft) => setDraft((d) => ({ ...d, ...patch }));
-  const showResult = () => go(`/result?${answersToQuery(complete(draft))}`);
-  const goStep = (s: QuizStep) => go(`/quiz/${s}`);
+  const showResult = () => navigate(resultPath(lang, complete(draft)));
+  const goStep = (s: QuizStep) => navigate(pathTo(lang, "quiz", s));
   const next = () => {
     const index = QUIZ_STEPS.indexOf(step);
     const following = QUIZ_STEPS[index + 1];
@@ -75,7 +75,7 @@ export function Quiz({ step }: { step: QuizStep }) {
   };
   const back = () => {
     const index = QUIZ_STEPS.indexOf(step);
-    if (index === 0) go("/");
+    if (index === 0) navigate(pathTo(lang, "home"));
     else goStep(QUIZ_STEPS[index - 1]);
   };
   // Choosing an option moves on after a short pause, so the choice is visible first.
@@ -237,7 +237,7 @@ export function Quiz({ step }: { step: QuizStep }) {
           }))}
           onChoose={(shot, viaKeyboard) => {
             update({ shot });
-            if (!viaKeyboard) window.setTimeout(() => go(`/result?${answersToQuery(complete({ ...draft, shot }))}`), 220);
+            if (!viaKeyboard) window.setTimeout(() => navigate(resultPath(lang, complete({ ...draft, shot }))), 220);
           }}
         />
       );

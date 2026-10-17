@@ -505,6 +505,38 @@ a {
   color: var(--red);
 }
 
+.faq {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 2px solid var(--line);
+}
+
+.faq-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 28px 40px;
+  margin-top: 16px;
+}
+
+.faq-item h3 {
+  margin: 0 0 6px;
+  font-size: 1.12rem;
+}
+
+.faq-item p {
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+
+.faq-item a {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.app > main.not-found {
+  padding-top: clamp(24px, 6vw, 72px);
+}
+
 .all-rounder {
   margin-top: 40px;
   padding: clamp(20px, 4vw, 36px);

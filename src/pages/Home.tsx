@@ -2,11 +2,12 @@ import { useState } from "react";
 import { copy } from "../copy";
 import { useLang } from "../i18n";
 import { LABEL_PARTS, StickArt, type LabelPart } from "../components/art/StickArt";
+import { pathTo } from "../router";
 
 const EXAMPLE: Record<LabelPart, string> = { size: "JR", flex: "40", curve: "P92", hand: "L", length: '52"' };
 
 export function Home() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [active, setActive] = useState<LabelPart>("flex");
 
   const titles: Record<LabelPart, string> = {
@@ -30,11 +31,11 @@ export function Home() {
         <h1>{t(copy.home.title)}</h1>
         <p className="lead">{t(copy.home.lead)}</p>
         <div className="button-row">
-          <a className="button button-primary button-big" href="#/quiz/age">
+          <a className="button button-primary button-big" href={pathTo(lang, "quiz", "age")}>
             {t(copy.home.start)}
             <span className="button-note">{t(copy.home.startNote)}</span>
           </a>
-          <a className="button button-big" href="#/guide">
+          <a className="button button-big" href={pathTo(lang, "guide")}>
             {t(copy.home.guide)}
           </a>
         </div>
@@ -70,10 +71,23 @@ export function Home() {
         </div>
       </section>
 
+      <section className="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">{t(copy.faqTitle)}</h2>
+        <div className="faq-list">
+          {copy.faq.map((item) => (
+            <article key={item.anchor} className="faq-item">
+              <h3>{t(item.question)}</h3>
+              <p>{t(item.answer)}</p>
+              <a href={`${pathTo(lang, "guide")}#${item.anchor}`}>{t(copy.faqMore)}</a>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="all-rounder">
         <h2>{t(copy.home.allRounderTitle)}</h2>
         <p>{t(copy.home.allRounderBody)}</p>
-        <a className="button button-primary" href="#/quiz/age">
+        <a className="button button-primary" href={pathTo(lang, "quiz", "age")}>
           {t(copy.home.start)}
         </a>
       </section>

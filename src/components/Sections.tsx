@@ -339,7 +339,7 @@ export function BrandSection({ rec }: Props) {
                           <span className="models">
                             {family.models.map((model, i) => (
                               <span key={model} className="model">
-                                <span className="tier-dots" aria-label={t(copy.explain.tiers[Math.min(2, i)])}>
+                                <span className="tier-dots" role="img" aria-label={t(copy.explain.tiers[Math.min(2, i)])}>
                                   {[0, 1, 2].map((dot) => (
                                     <span key={dot} data-on={dot < 3 - i || undefined} />
                                   ))}

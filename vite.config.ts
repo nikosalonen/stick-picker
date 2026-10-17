@@ -1,8 +1,14 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// Relative base so the build works under any GitHub Pages path.
+// The site is published at https://nikosalonen.github.io/stick-picker/, and pages have
+// real paths (/stick-picker/fi/opas/), so assets need an absolute base.
+const base = "/stick-picker/";
+
 export default defineConfig({
-  base: "./",
+  base,
   plugins: [react()],
+  // Vitest serves from "/", so tests get the real base path explicitly.
+  test: { env: { BASE_URL: base } },
 });

@@ -428,7 +428,7 @@ export const copy = {
   },
 
   guide: {
-    title: t("Hockey sticks, explained", "Jääkiekkomailat selitettynä"),
+    title: t("Hockey stick guide: size, length, flex and curve", "Jääkiekkomailan valinta: koko, pituus, jäykkyys ja lapa"),
     lead: t(
       "Everything on a stick label, in plain words. Want a recommendation instead?",
       "Kaikki mailan merkinnät selkokielellä. Haluatko mieluummin suosituksen?",
@@ -465,6 +465,65 @@ export const copy = {
     ),
     heightAxis: t("Player height (cm)", "Pelaajan pituus (cm)"),
     yourPlayer: (cm: number) => t(`Your player: ${cm} cm`, `Pelaajasi: ${cm} cm`),
+  },
+
+  faqTitle: t("Quick answers", "Pikavastaukset"),
+  faqMore: t("More in the guide", "Lisää oppaassa"),
+  faq: [
+    {
+      anchor: "length",
+      question: t("How long should a hockey stick be?", "Kuinka pitkä jääkiekkomailan pitää olla?"),
+      answer: t(
+        "Stand the stick upright on the tip of its blade in front of the player, in shoes. The top should reach between the chin and the nose. In skates it reaches about the chin.",
+        "Nosta maila pystyyn lavan kärjen varaan pelaajan eteen, kengät jalassa. Varren pään pitäisi ulottua leuan ja nenän väliin. Luistimet jalassa se ulottuu suunnilleen leukaan.",
+      ),
+    },
+    {
+      anchor: "flex",
+      question: t("What flex should a hockey stick have?", "Mikä jäykkyys (flex) jääkiekkomailassa pitää olla?"),
+      answer: t(
+        "About half the player's body weight in pounds (body weight in kg × 1.1), a bit less for beginners. Cutting a stick makes it stiffer, about 4 flex points for every inch cut off.",
+        "Noin puolet pelaajan painosta paunoina (paino kiloina × 1,1), aloittelijalle hieman vähemmän. Lyhentäminen jäykistää mailaa, noin 4 flex-pistettä jokaista lyhennettyä tuumaa kohti.",
+      ),
+    },
+    {
+      anchor: "curve",
+      question: t("Which curve is best for a beginner?", "Mikä lapa sopii aloittelijalle?"),
+      answer: t(
+        "A mild, common curve: P88 or P92 (CCM calls it P29). Wait with deep toe curves like P28 until the player can pass and shoot backhands well.",
+        "Loiva ja yleinen lapa: P88 tai P92 (CCM:llä P29). Odota syvien kärkilapojen, kuten P28:n, kanssa, kunnes pelaaja osaa syöttää ja laukoa rystyllä hyvin.",
+      ),
+    },
+    {
+      anchor: "hand",
+      question: t("Does my child need a left or a right stick?", "Tarvitseeko lapseni Left- vai Right-mailan?"),
+      answer: t(
+        "A left stick has the left hand lower on the shaft. It has nothing to do with the writing hand. Hand the player a broom and ask them to sweep: the lower hand shows the side.",
+        "Left-mailassa vasen käsi on alempana varressa. Kirjoituskädellä ei ole merkitystä. Anna pelaajalle harja ja pyydä lakaisemaan: alempi käsi kertoo puolen.",
+      ),
+    },
+    {
+      anchor: "sizes",
+      question: t("Junior, intermediate or senior?", "Junior, intermediate vai senior?"),
+      answer: t(
+        "Pick the size by height and weight, not age. Roughly: youth under 130 cm, junior 130–155 cm, intermediate 150–170 cm and senior from 165 cm.",
+        "Koko valitaan pituuden ja painon mukaan, ei iän. Suunnilleen: youth alle 130 cm, junior 130–155 cm, intermediate 150–170 cm ja senior 165 cm:stä ylöspäin.",
+      ),
+    },
+    {
+      anchor: "brands",
+      question: t("Does a kid need an expensive stick?", "Tarvitseeko lapsi kalliin mailan?"),
+      answer: t(
+        "No. Kids outgrow a stick in a season or two, and the top models are lighter, not easier to play with. A value model or last season's model is plenty.",
+        "Ei. Lapsi kasvaa mailasta ulos kaudessa tai kahdessa, ja huippumallit ovat kevyempiä, eivät helpompia pelata. Edullinen malli tai viime kauden malli riittää hyvin.",
+      ),
+    },
+  ],
+
+  notFound: {
+    title: t("Page not found", "Sivua ei löytynyt"),
+    body: t("This page does not exist. Start from the front page.", "Tätä sivua ei ole. Aloita etusivulta."),
+    home: t("Go to the front page", "Siirry etusivulle"),
   },
 
   footer: t(

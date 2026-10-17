@@ -15,12 +15,12 @@ import {
   SizeChartSection,
 } from "../components/Sections";
 import { ICONS } from "../components/art/icons";
-import { go, resultHash } from "../router";
+import { navigate, pathTo, resultPath } from "../router";
 
 const SIZE_ORDER: SizeCategory[] = ["youth", "junior", "intermediate", "senior"];
 
 export function Result({ answers, preferences }: { answers: Answers | null; preferences: Preferences }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [status, setStatus] = useState<"idle" | "copied" | "linkCopied">("idle");
   const [prefs, setPrefs] = useState<Preferences>(preferences);
 
@@ -31,12 +31,12 @@ export function Result({ answers, preferences }: { answers: Answers | null; pref
   const updatePrefs = (next: Preferences) => {
     setPrefs(next);
     // Keep favourites in the link without a navigation, so the page doesn't jump to the top.
-    if (answers) window.history.replaceState(null, "", resultHash(answers, next));
+    if (answers) window.history.replaceState(null, "", resultPath(lang, answers, next));
   };
 
   useEffect(() => {
-    if (!answers) go("/quiz/age");
-  }, [answers]);
+    if (!answers) navigate(pathTo(lang, "quiz", "age"), { replace: true });
+  }, [answers, lang]);
 
   useEffect(() => {
     if (status === "idle") return;
@@ -201,7 +201,7 @@ export function Result({ answers, preferences }: { answers: Answers | null; pref
           <button className="button" onClick={share}>
             {status === "linkCopied" ? t(copy.result.linkCopied) : t(copy.result.share)}
           </button>
-          <a className="button button-quiet" href="#/quiz/age">
+          <a className="button button-quiet" href={pathTo(lang, "quiz", "age")}>
             {t(copy.result.edit)}
           </a>
         </div>

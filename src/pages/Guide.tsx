@@ -1,5 +1,6 @@
 import { copy } from "../copy";
 import { useLang } from "../i18n";
+import { pathTo } from "../router";
 import {
   BrandSection,
   CurveSection,
@@ -12,13 +13,13 @@ import {
 } from "../components/Sections";
 
 export function Guide() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   return (
     <main className="guide">
       <header className="guide-head">
         <h1>{t(copy.guide.title)}</h1>
         <p className="lead">
-          {t(copy.guide.lead)} <a href="#/quiz/age">{t(copy.home.start)}</a>
+          {t(copy.guide.lead)} <a href={pathTo(lang, "quiz", "age")}>{t(copy.home.start)}</a>
         </p>
       </header>
       <SizeChartSection />
