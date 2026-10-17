@@ -164,7 +164,17 @@ export function StickArt({ values, active, onSelect, title, animateIn = false, p
           const content = (
             <>
               <rect className="stick-art-hit" x={slot.x} y="58" width={slot.w} height="44" rx="7" />
-              <text x={slot.x + slot.w / 2} y="91" textAnchor="middle" className="stick-art-text" data-active={isActive || undefined}>
+              <text
+                x={slot.x + slot.w / 2}
+                y="91"
+                textAnchor="middle"
+                className="stick-art-text"
+                data-active={isActive || undefined}
+                // Ranges like "YTH/JR" can be wider than the slot; squeeze them to fit.
+                {...(values[part].length * 17 > slot.w - 10
+                  ? { textLength: slot.w - 14, lengthAdjust: "spacingAndGlyphs" as const }
+                  : {})}
+              >
                 {values[part]}
               </text>
             </>

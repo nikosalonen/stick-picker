@@ -156,10 +156,10 @@ export const copy = {
   },
 
   result: {
-    title: t("Ask the shop for this stick", "Pyydä kaupasta tällaista mailaa"),
+    title: t("Look for a stick like this", "Etsi tällaista mailaa"),
     lead: t(
-      "Show this list in the shop, or send the link to whoever is buying.",
-      "Näytä tämä lista kaupassa tai lähetä linkki ostajalle.",
+      "Any stick within these ranges will do. Show this list in the shop, or send the link to whoever is buying.",
+      "Mikä tahansa näihin rajoihin sopiva maila käy. Näytä lista kaupassa tai lähetä linkki ostajalle.",
     ),
     copy: t("Copy list", "Kopioi lista"),
     copied: t("Copied", "Kopioitu"),
@@ -170,7 +170,7 @@ export const copy = {
     otherNames: t("Other brands", "Muilla merkeillä"),
     yourStick: t("Your stick", "Sinun mailasi"),
     cutTo: (cm: number, inches: number) => t(`Cut to about ${cm} cm (${inches}")`, `Lyhennä noin ${cm} cm:iin (${inches}")`),
-    buyLength: (inches: number) => t(`Buy ${inches}" long`, `Osta ${inches}" pituinen`),
+    buyLength: (inches: string) => t(`Buy ${inches}" long`, `Osta ${inches}" pituinen`),
     noCut: t("No cutting needed", "Ei tarvitse lyhentää"),
     handUnsure: t("Test first: see the broom test", "Testaa ensin: katso harjatesti"),
     kickNoMatter: t("Any is fine at this stage", "Mikä tahansa käy tässä vaiheessa"),
@@ -194,6 +194,51 @@ export const copy = {
     favCurve: t("Favourite curve", "Suosikkilapa"),
     useSuggestion: (value: string) => t(`Use our suggestion (${value})`, `Käytä ehdotustamme (${value})`),
     clearFavourites: t("Clear favourites", "Poista suosikit"),
+    and: t("and", "ja"),
+    or: t("or", "tai"),
+    flexRangeNote: (flexes: string, target: number) =>
+      t(
+        `Any of these works: ${flexes}. Once cut to length, about ${target} is what we'd aim for. When in doubt, take the softer one.`,
+        `Mikä tahansa näistä käy: ${flexes}. Lyhennettynä tavoite on noin ${target}. Jos epäilyttää, valitse pehmeämpi.`,
+      ),
+    sizeNaming: t(
+      "Brands name sizes differently: one brand's long youth stick is another's short junior. Either works.",
+      "Merkit nimeävät koot eri tavoin: yhden merkin pitkä youth-maila on toisen lyhyt junior. Kumpi tahansa käy.",
+    ),
+    flexSingleNote: (flex: number, target: number) =>
+      t(
+        `This size comes in flex ${flex}. Once cut to length it feels close to the ${target} we'd aim for.`,
+        `Tätä kokoa myydään flex ${flex} -mailana. Lyhennettynä se on lähellä tavoitetta ${target}.`,
+      ),
+    uncutLength: (range: string) => t(`Uncut ${range}`, `Leikkaamattomana ${range}`),
+    needsExtension: t(
+      "Even the longest sticks are short for this player. Ask the shop for an extension (a plug that adds a few centimetres to the end).",
+      "Pisimmätkin mailat ovat tälle pelaajalle lyhyitä. Kysy kaupasta jatkopalaa, joka lisää varren päähän muutaman sentin.",
+    ),
+    candidatesTitle: t("Sticks to look for", "Etsi näitä mailoja"),
+    candidatesBody: t(
+      "Real models made in this size and flex range. The best fits come first.",
+      "Oikeita malleja, joita tehdään tässä koossa ja jäykkyydessä. Parhaiten sopivat ensin.",
+    ),
+    candidatesNote: t(
+      "Model names change every season or two. Last season's model of the same family is just as good and often cheaper.",
+      "Mallinimet vaihtuvat kauden tai kahden välein. Saman sarjan viime kauden malli on yhtä hyvä ja usein halvempi.",
+    ),
+    tiers: {
+      top: t("Top price", "Huippuhinta"),
+      mid: t("Mid price", "Keskihinta"),
+      value: t("Value", "Edullinen"),
+    },
+    soldBy: (flex: number, sellers: string) =>
+      t(`Flex ${flex} in this size is sold by ${sellers} (uncut length).`, `Flex ${flex} tässä koossa: ${sellers} (leikkaamaton pituus).`),
+    curveNotMade: (curve: string, size: string, instead: string) =>
+      t(
+        `${curve} isn't made in ${size} size, so we picked ${instead} instead.`,
+        `${curve}-lapaa ei valmisteta ${size}-koossa, joten valitsimme tilalle ${instead}.`,
+      ),
+    notInSize: (size: string) => t(`Not made in ${size}`, `Ei ${size}-kokoa`),
+    curvesNotMade: (size: string, curves: string) =>
+      t(`Not made in ${size} size: ${curves}.`, `Ei valmisteta ${size}-koossa: ${curves}.`),
     yourPick: t("your pick", "oma valinta"),
     weSuggested: (value: string) => t(`We suggested ${value}`, `Ehdotimme ${value}`),
     warnStiffer: (after: number, target: number) =>
@@ -292,14 +337,10 @@ export const copy = {
       "Stick makers measure flex like this: the shaft rests on two supports and is pushed down in the middle. The bend is drawn bigger than real life so you can see it.",
       "Valmistajat mittaavat jäykkyyden näin: varsi lepää kahden tuen päällä ja sitä painetaan keskeltä. Taipuma on piirretty todellista suuremmaksi, jotta sen näkee.",
     ),
-    lengthYours: (cm: number, inches: number, stock: number, cut: number) =>
+    lengthYours: (cm: number, inches: number, uncut: string) =>
       t(
-        cut > 0
-          ? `Your stick: buy ${stock}" and cut it to about ${cm} cm (${inches}"). That is about ${cut} cm off.`
-          : `Your stick: about ${cm} cm (${inches}"). A ${stock}" stick fits without cutting.`,
-        cut > 0
-          ? `Sinun mailasi: osta ${stock}" ja lyhennä noin ${cm} cm:iin (${inches}"). Lyhennettävää on noin ${cut} cm.`
-          : `Sinun mailasi: noin ${cm} cm (${inches}"). ${stock}" maila sopii lyhentämättä.`,
+        `Your stick: sold ${uncut} long uncut. Ask the shop to cut it to about ${cm} cm (${inches}"), or leave it if it is already shorter.`,
+        `Sinun mailasi: leikkaamattomana ${uncut}. Pyydä kauppaa lyhentämään se noin ${cm} cm:iin (${inches}"), ellei se ole jo lyhyempi.`,
       ),
     lengthFigureAlt: t(
       "A player standing in shoes with the stick upright on the tip of its blade. The top of the stick reaches between the chin and the nose.",
@@ -490,8 +531,8 @@ export const copy = {
       anchor: "curve",
       question: t("Which curve is best for a beginner?", "Mikä lapa sopii aloittelijalle?"),
       answer: t(
-        "A mild, common curve: P88 or P92 (CCM calls it P29). Wait with deep toe curves like P28 until the player can pass and shoot backhands well.",
-        "Loiva ja yleinen lapa: P88 tai P92 (CCM:llä P29). Odota syvien kärkilapojen, kuten P28:n, kanssa, kunnes pelaaja osaa syöttää ja laukoa rystyllä hyvin.",
+        "A mild, common curve: P88 or P92 (CCM calls it P29). Youth-size sticks come only in P92 and P28, so take P92 there. Wait with deep toe curves like P28 until the player can pass and shoot backhands well.",
+        "Loiva ja yleinen lapa: P88 tai P92 (CCM:llä P29). Youth-kokoisia mailoja tehdään vain P92- ja P28-lavoilla, joten valitse niissä P92. Odota syvien kärkilapojen, kuten P28:n, kanssa, kunnes pelaaja osaa syöttää ja laukoa rystyllä hyvin.",
       ),
     },
     {

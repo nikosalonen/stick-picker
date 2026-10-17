@@ -12,7 +12,7 @@ const HEIGHT_DOMAIN: [number, number] = [90, 210];
  * Which stick size fits which player height. Bars are the typical height range of each size;
  * on the result page the player's height is a line and their size is highlighted.
  */
-export function SizeChart({ heightCm, size, table }: { heightCm?: number; size?: SizeCategory; table?: ReactNode }) {
+export function SizeChart({ heightCm, sizes, table }: { heightCm?: number; sizes?: SizeCategory[]; table?: ReactNode }) {
   const { t } = useLang();
   const { ref, width } = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<SizeCategory | null>(null);
@@ -55,10 +55,10 @@ export function SizeChart({ heightCm, size, table }: { heightCm?: number; size?:
             {SIZE_ORDER.map((s) => {
               const [from, to] = SIZES[s].heightCm;
               const by = rows(s) ?? 0;
-              const isPlayer = size === s;
+              const isPlayer = Boolean(sizes?.includes(s));
               const className = isPlayer
                 ? "chart-bar chart-bar-accent"
-                : size
+                : sizes
                   ? "chart-bar chart-bar-neutral"
                   : "chart-bar chart-bar-series";
               return (

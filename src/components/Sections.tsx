@@ -4,7 +4,8 @@ import { copy } from "../copy";
 import { BRANDS, KICK_ORDER } from "../data/brands";
 import { CURVE_ORDER, CURVES, rateCurve, type Verdict } from "../data/curves";
 import { useLang } from "../i18n";
-import { SIZES, toInches, type Answers, type Recommendation, type SizeCategory } from "../logic/recommend";
+import { familyMadeIn } from "../data/stock";
+import { curveMadeIn, SIZES, toInches, type Answers, type Recommendation, type SizeCategory } from "../logic/recommend";
 import { BladeTopDown, FaceIcon } from "./art/BladeTopDown";
 import { FlexBench } from "./art/FlexBench";
 import { KickGlyph, KickShot } from "./art/KickShot";
@@ -66,7 +67,13 @@ export function LengthSection({ rec, answers }: Props) {
       <p>{t(copy.explain.lengthMore)}</p>
       {rec && (
         <p className="callout">
-          {t(copy.explain.lengthYours(rec.lengthCm, toInches(rec.lengthCm), rec.stockLengthIn, rec.cutCm))}
+          {t(
+            copy.explain.lengthYours(
+              rec.lengthCm,
+              toInches(rec.lengthCm),
+              rec.lengthsIn.length > 1 ? `${rec.lengthsIn[0]}–${rec.lengthsIn[rec.lengthsIn.length - 1]}"` : `${rec.lengthsIn[0]}"`,
+            ),
+          )}
         </p>
       )}
       <LengthExamples
@@ -157,7 +164,10 @@ export function KickSection({ rec }: Props) {
 
 export function CurveSection({ rec, answers }: Props) {
   const { t } = useLang();
-  const rated = CURVE_ORDER.map((id) => ({ id, ...rateCurve(id, answers) }));
+  // On the result page, only curves made in the player's size are offered.
+  const madeHere = rec ? CURVE_ORDER.filter((id) => rec.sizes.every((size) => curveMadeIn(id, size))) : CURVE_ORDER;
+  const notMadeHere = CURVE_ORDER.filter((id) => !madeHere.includes(id));
+  const rated = madeHere.map((id) => ({ id, ...rateCurve(id, answers) }));
   // The player's curve leads its group.
   const ordered = rec ? [...rated].sort((a, b) => Number(b.id === rec.curve) - Number(a.id === rec.curve)) : rated;
   const groups: { verdict: Verdict; title: string }[] = [
@@ -228,6 +238,9 @@ export function CurveSection({ rec, answers }: Props) {
           </div>
         );
       })}
+      {rec && notMadeHere.length > 0 && (
+        <p className="small muted">{t(copy.result.curvesNotMade(t(copy.sizes[rec.size]), notMadeHere.join(", ")))}</p>
+      )}
       <p className="small muted">{t(copy.explain.curveListNote)}</p>
       <details className="more">
         <summary>{t(copy.explain.lieQuestion)}</summary>
@@ -331,11 +344,15 @@ export function BrandSection({ rec }: Props) {
                 <th scope="row">{brand.name}</th>
                 {KICK_ORDER.map((kick) => {
                   const family = brand.families[kick];
+                  const notInSize = Boolean(rec && family && !rec.sizes.some((size) => familyMadeIn(brand.name, family.name, size)));
                   return (
-                    <td key={kick} data-match={rec?.kick === kick || undefined}>
+                    <td key={kick} data-match={rec?.kick === kick || undefined} data-unavailable={notInSize || undefined}>
                       {family ? (
                         <>
                           <strong>{family.name}</strong>
+                          {notInSize && rec && (
+                            <span className="not-in-size">{t(copy.result.notInSize(copy.sizeShort[rec.size]))}</span>
+                          )}
                           <span className="models">
                             {family.models.map((model, i) => (
                               <span key={model} className="model">
@@ -400,7 +417,7 @@ export function SizeChartSection({ rec, answers }: Props) {
     <Section
       id="sizes"
       title={t(rec ? copy.explain.sizeYoursTitle : copy.explain.sizesTitle)}
-      below={<SizeChart heightCm={answers?.heightCm} size={rec?.size} table={<SizeTable />} />}
+      below={<SizeChart heightCm={answers?.heightCm} sizes={rec?.sizes} table={<SizeTable />} />}
     >
       <p>{t(copy.explain.sizesBody)}</p>
     </Section>

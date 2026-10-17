@@ -12,9 +12,9 @@ describe("rateCurve", () => {
     }
   });
 
-  it("steers beginners away from deep and closed curves", () => {
+  it("steers beginners away from deep curves", () => {
     const learner = { ...base, age: "7to9" as const, level: "new" as const };
-    for (const id of ["P28", "P90TM", "W71", "P30"] as const) {
+    for (const id of ["P28", "P90TM"] as const) {
       expect(rateCurve(id, learner).verdict).toBe("notRecommended");
     }
   });

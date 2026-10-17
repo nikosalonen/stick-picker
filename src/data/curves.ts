@@ -24,7 +24,8 @@ const t = (en: string, fi: string): Text => ({ en, fi });
 
 // Sources: CCM's curve chart (via Ice Warehouse), and the StickMeta and Reference Hockey
 // cross-brand charts, October 2026. They disagree on some details, so only details that at
-// least two of them share are listed. Curves they disagree on (P14, PM9, P91A) are left out.
+// least two of them share are listed. Curves they disagree on (P14, PM9, P91A) are left out,
+// and so are curves no big brand sells as a stock stick any more (P30, P02, W71).
 export const CURVES: Record<CurveId, Curve> = {
   P92: {
     id: "P92",
@@ -35,8 +36,8 @@ export const CURVES: Record<CurveId, Curve> = {
     faceKind: "open",
     depthLabel: t("Medium", "Keskisyvä"),
     lie: "6",
-    sameAs: "Bauer P92, CCM P29, Warrior W03, True TC2 / T92, Sherwood PP92",
-    otherNames: "CCM P29, Warrior W03, True TC2",
+    sameAs: "Bauer P92, CCM P29, Warrior W03, True T92, Sherwood PP92",
+    otherNames: "CCM P29, Warrior W03, True T92",
     summary: t(
       "The most popular curve. Works for passing, shooting and lifting the puck. A safe choice for almost anyone.",
       "Suosituin lapa. Toimii syötöissä, laukauksissa ja kiekon nostamisessa. Turvallinen valinta melkein kenelle tahansa.",
@@ -69,8 +70,8 @@ export const CURVES: Record<CurveId, Curve> = {
     faceKind: "open",
     depthLabel: t("Medium", "Keskisyvä"),
     lie: "5–6",
-    sameAs: "Bauer P90TM, CCM P90TM, True T90T",
-    otherNames: "True T90T",
+    sameAs: "Bauer P90T, CCM P90TM, Warrior W90TM, True T90T, Sherwood PP90MX",
+    otherNames: "Warrior W90TM, True T90T",
     summary: t(
       "In between P92 and P28. Lifts the puck easily and releases it quickly.",
       "P92:n ja P28:n välimuoto. Nostaa kiekon helposti, ja laukaus lähtee nopeasti.",
@@ -86,68 +87,17 @@ export const CURVES: Record<CurveId, Curve> = {
     faceKind: "open",
     depthLabel: t("Deep", "Syvä"),
     lie: "5",
-    sameAs: "Bauer P28, CCM P28, Warrior W28, True TC4 / T28, Sherwood PP28",
-    otherNames: "Warrior W28, True TC4",
+    sameAs: "Bauer P28, CCM P28, Warrior W28, True T28, Sherwood PP28",
+    otherNames: "Warrior W28, True T28",
     summary: t(
       "A big curve at the tip of the blade. Great for quick shots and tricks with the puck.",
       "Iso kaarre lavan kärjessä. Hyvä nopeisiin laukauksiin ja kiekkotemppuihin.",
     ),
     beginnerFriendly: false,
   },
-  W71: {
-    id: "W71",
-    bendAt: 0.52,
-    depth: 0.78,
-    location: t("Mid", "Keskellä"),
-    face: t("Open", "Avoin"),
-    faceKind: "open",
-    depthLabel: t("Deep", "Syvä"),
-    lie: "5",
-    sameAs: "Warrior W71 (Warrior only)",
-    otherNames: "Warrior only",
-    summary: t(
-      "A deep curve in the middle with an open face. Lifts the puck very easily.",
-      "Syvä kaarre keskellä ja avoin lapa. Nostaa kiekon todella helposti.",
-    ),
-    beginnerFriendly: false,
-  },
-  P30: {
-    id: "P30",
-    bendAt: 0.55,
-    depth: 0.42,
-    location: t("Mid", "Keskellä"),
-    face: t("Closed", "Suljettu"),
-    faceKind: "closed",
-    depthLabel: t("Mild", "Loiva"),
-    lie: "5.5–6",
-    sameAs: "CCM P30 (mostly CCM)",
-    otherNames: "mostly CCM",
-    summary: t(
-      "A closed face keeps shots low and helps when handling the puck.",
-      "Suljettu lapa pitää laukaukset matalina ja auttaa kiekonkäsittelyssä.",
-    ),
-    beginnerFriendly: false,
-  },
-  P02: {
-    id: "P02",
-    bendAt: 0.26,
-    depth: 0.34,
-    location: t("Heel", "Kannassa"),
-    face: t("Slightly open", "Hieman avoin"),
-    faceKind: "slightlyOpen",
-    depthLabel: t("Mild", "Loiva"),
-    lie: "6",
-    sameAs: "Bauer P02, Warrior W02",
-    otherNames: "Warrior W02",
-    summary: t(
-      "A mild curve near the heel, for hard, flat slapshots from the blue line.",
-      "Loiva kaarre lähellä kantaa koviin, matalina pysyviin lämäreihin siniviivalta.",
-    ),
-    beginnerFriendly: false,
-  },
 };
 
-export const CURVE_ORDER: CurveId[] = ["P92", "P88", "P90TM", "P28", "W71", "P30", "P02"];
+export const CURVE_ORDER: CurveId[] = ["P92", "P88", "P90TM", "P28"];
 
 export type Verdict = "recommended" | "fine" | "notRecommended";
 
@@ -171,22 +121,6 @@ const REASONS = {
   deepForDefense: t(
     "A deep toe curve makes slapshots and long passes from the blue line harder to control.",
     "Syvä kärkikaarre vaikeuttaa lämäreiden ja pitkien syöttöjen hallintaa siniviivalta.",
-  ),
-  closedForLearner: t(
-    "The closed face makes it harder to lift the puck, and that is already hard for beginners.",
-    "Suljettu lapa vaikeuttaa kiekon nostamista, mikä on aloittelijalle valmiiksi vaikeaa.",
-  ),
-  closedForDefense: t(
-    "Keeps shots from the blue line low, where teammates can tip them in.",
-    "Pitää laukaukset siniviivalta matalina, jolloin kaverit voivat ohjata niitä.",
-  ),
-  heelForDefense: t(
-    "Made for hard, flat slapshots from the point, but can be hard to find in shops.",
-    "Tehty koviin, matalina pysyviin lämäreihin siniviivalta, mutta voi olla vaikea löytää kaupoista.",
-  ),
-  rare: t(
-    "Hard to find in shops, especially in junior sizes, and suits few players.",
-    "Vaikea löytää kaupoista, etenkin juniorikokoina, ja sopii harvoille.",
   ),
   fineOnceSkilled: t(
     "Works for a player who can already lift the puck and likes the feel.",
@@ -218,15 +152,5 @@ export function rateCurve(id: CurveId, answers?: Answers): { verdict: Verdict; r
       if (defense) return { verdict: "notRecommended", reason: REASONS.deepForDefense };
       if (quickForward) return { verdict: "recommended", reason: REASONS.quickShooter };
       return { verdict: "fine", reason: REASONS.fineOnceSkilled };
-    case "W71":
-      if (learner) return { verdict: "notRecommended", reason: REASONS.deepForLearner };
-      return { verdict: "fine", reason: REASONS.fineOnceSkilled };
-    case "P30":
-      if (learner) return { verdict: "notRecommended", reason: REASONS.closedForLearner };
-      if (defense) return { verdict: "fine", reason: REASONS.closedForDefense };
-      return { verdict: "fine", reason: REASONS.fineOnceSkilled };
-    case "P02":
-      if (defense && !learner) return { verdict: "fine", reason: REASONS.heelForDefense };
-      return { verdict: "notRecommended", reason: REASONS.rare };
   }
 }

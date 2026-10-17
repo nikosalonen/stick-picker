@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { copy } from "../copy";
 import { CURVE_ORDER, CURVES, rateCurve } from "../data/curves";
 import { useLang } from "../i18n";
-import { FLEX_OPTIONS, recommend, SIZES, toInches, type Answers, type CurveId, type Preferences, type SizeCategory } from "../logic/recommend";
+import { STOCK_STICKS } from "../data/stock";
+import { candidatesFor, type Candidate } from "../logic/candidates";
+import { KickGlyph } from "../components/art/KickShot";
+import { curveMadeIn, FLEX_OPTIONS, recommend, SIZE_ORDER, toInches, type Answers, type CurveId, type Preferences, type SizeCategory } from "../logic/recommend";
 import { StickArt } from "../components/art/StickArt";
 import {
   BrandSection,
@@ -16,8 +19,6 @@ import {
 } from "../components/Sections";
 import { ICONS } from "../components/art/icons";
 import { navigate, pathTo, resultPath } from "../router";
-
-const SIZE_ORDER: SizeCategory[] = ["youth", "junior", "intermediate", "senior"];
 
 export function Result({ answers, preferences }: { answers: Answers | null; preferences: Preferences }) {
   const { t, lang } = useLang();
@@ -55,6 +56,13 @@ export function Result({ answers, preferences }: { answers: Answers | null; pref
         ? t(copy.result.warnSofter(rec.flexAfterCut, rec.targetFlex))
         : null;
   const young = answers.age === "under7" || answers.age === "7to9" || answers.age === "10to13";
+  const range = (values: number[], unit = "") =>
+    values.length > 1 ? `${values[0]}–${values[values.length - 1]}${unit}` : `${values[0]}${unit}`;
+  const flexRange = range(rec.flexes);
+  const lengthRange = range(rec.lengthsIn, '"');
+  const sizeName = t(copy.sizes[rec.size]);
+  const candidates = candidatesFor(rec, answers);
+  const curveChoices = [rec.curve, ...rec.curveAlternatives.slice(0, 1)];
   const handLetter = rec.hand === "left" ? "L" : rec.hand === "right" ? "R" : "L / R";
   const handText =
     rec.hand === "unsure" ? t(copy.result.handUnsure) : `${t(copy.quiz.hands[rec.hand])} (${handLetter})`;
@@ -63,8 +71,15 @@ export function Result({ answers, preferences }: { answers: Answers | null; pref
     {
       icon: "size",
       label: t(copy.label.size),
-      value: `${t(copy.sizes[rec.size])} (${copy.sizeShort[rec.size]})`,
-      note: sizeChanged ? t(copy.result.sizeChanged(rec.flex, t(copy.sizes[rec.size]))) : undefined,
+      value: listJoin(
+        rec.sizes.map((size) => `${t(copy.sizes[size])} (${copy.sizeShort[size]})`),
+        t(copy.result.or),
+      ),
+      note: sizeChanged
+        ? t(copy.result.sizeChanged(rec.flex, t(copy.sizes[rec.size])))
+        : rec.sizes.length > 1
+          ? t(copy.result.sizeNaming)
+          : undefined,
       href: "#sizes",
     },
     rec.favourite.flex
@@ -79,11 +94,23 @@ export function Result({ answers, preferences }: { answers: Answers | null; pref
       : {
           icon: "flex",
           label: t(copy.label.flex),
-          value: String(rec.flex),
-          note: rec.flexRange[0] !== rec.flexRange[1] ? `${t(copy.result.alsoFine)}: ${rec.flexRange[0]}` : undefined,
+          value: flexRange,
+          note:
+            rec.flexes.length > 1
+              ? t(copy.result.flexRangeNote(listJoin(rec.flexes.map(String), t(copy.result.or)), rec.targetFlex))
+              : t(copy.result.flexSingleNote(rec.flex, rec.targetFlex)),
           href: "#flex",
         },
-    rec.favourite.curve
+    rec.unavailableCurve
+      ? {
+          icon: "curve",
+          label: t(copy.label.curve),
+          value: rec.curve,
+          note: t(copy.result.curveNotMade(rec.unavailableCurve, sizeName, rec.curve)),
+          warn: true,
+          href: "#curve",
+        }
+      : rec.favourite.curve
       ? {
           icon: "curve",
           label: t(copy.label.curve),
@@ -95,16 +122,19 @@ export function Result({ answers, preferences }: { answers: Answers | null; pref
       : {
           icon: "curve",
           label: t(copy.label.curve),
-          value: `${rec.curve}`,
-          note: `${t(copy.result.otherNames)}: ${CURVES[rec.curve].otherNames}. ${t(copy.result.alsoFine)}: ${rec.curveAlternatives[0]}`,
+          value: listJoin(curveChoices, t(copy.result.or)),
+          note: curveChoices.map((id) => `${id} = ${CURVES[id].otherNames}`).join(". "),
           href: "#curve",
         },
     { icon: "hand", label: t(copy.label.hand), value: handText, href: "#hand" },
     {
       icon: "length",
       label: t(copy.label.length),
-      value: t(copy.result.buyLength(rec.stockLengthIn)),
-      note: rec.cutCm > 0 ? t(copy.result.cutTo(rec.lengthCm, toInches(rec.lengthCm))) : t(copy.result.noCut),
+      value: t(copy.result.uncutLength(lengthRange)),
+      note: rec.needsExtension
+        ? t(copy.result.needsExtension)
+        : t(copy.result.cutTo(rec.lengthCm, toInches(rec.lengthCm))),
+      warn: rec.needsExtension,
       href: "#length",
     },
     {
@@ -117,7 +147,12 @@ export function Result({ answers, preferences }: { answers: Answers | null; pref
   ];
 
   const copyList = async () => {
-    const text = [t(copy.result.title), ...rows.map((r) => `${r.label}: ${r.value}${r.note ? ` (${r.note})` : ""}`), window.location.href].join("\n");
+    const text = [
+      t(copy.result.title),
+      ...rows.map((r) => `${r.label}: ${r.value}${r.note ? ` (${r.note})` : ""}`),
+      `${t(copy.result.candidatesTitle)}: ${candidates.map((c) => `${c.model.brand} ${c.model.family} ${c.model.name}`).join(", ")}`,
+      window.location.href,
+    ].join("\n");
     try {
       await navigator.clipboard.writeText(text);
       setStatus("copied");
@@ -157,11 +192,11 @@ export function Result({ answers, preferences }: { answers: Answers | null; pref
           animateIn
           title={t(copy.result.yourStick)}
           values={{
-            size: copy.sizeShort[rec.size],
-            flex: String(rec.flex),
+            size: rec.sizes.map((size) => copy.sizeShort[size]).join("/"),
+            flex: flexRange,
             curve: rec.curve,
             hand: rec.hand === "unsure" ? "L/R" : handLetter,
-            length: `${rec.stockLengthIn}"`,
+            length: lengthRange,
           }}
         />
       </div>
@@ -205,10 +240,12 @@ export function Result({ answers, preferences }: { answers: Answers | null; pref
             {t(copy.result.edit)}
           </a>
         </div>
+        <Candidates candidates={candidates} />
         <Favourites
           prefs={prefs}
           suggestedFlex={rec.suggested.flex}
           suggestedCurve={rec.suggested.curve}
+          size={rec.size}
           answers={answers}
           onChange={updatePrefs}
         />
@@ -235,12 +272,14 @@ function Favourites({
   prefs,
   suggestedFlex,
   suggestedCurve,
+  size,
   answers,
   onChange,
 }: {
   prefs: Preferences;
   suggestedFlex: number;
   suggestedCurve: CurveId;
+  size: SizeCategory;
   answers: Answers;
   onChange: (prefs: Preferences) => void;
 }) {
@@ -260,7 +299,7 @@ function Favourites({
             <option value="">{t(copy.result.useSuggestion(String(suggestedFlex)))}</option>
             {FLEX_OPTIONS.map((flex) => (
               <option key={flex} value={flex}>
-                Flex {flex} ({SIZE_ORDER.filter((size) => SIZES[size].flexes.includes(flex)).map((size) => copy.sizeShort[size]).join(" / ")})
+                Flex {flex} ({whereSold(flex)})
               </option>
             ))}
           </select>
@@ -272,7 +311,7 @@ function Favourites({
             onChange={(e) => onChange({ ...prefs, curve: e.target.value === "" ? undefined : (e.target.value as CurveId) })}
           >
             <option value="">{t(copy.result.useSuggestion(suggestedCurve))}</option>
-            {CURVE_ORDER.map((id) => (
+            {CURVE_ORDER.filter((id) => curveMadeIn(id, size)).map((id) => (
               <option key={id} value={id}>
                 {id}: {t(copy.explain.verdicts[rateCurve(id, answers).verdict]).toLowerCase()}
               </option>
@@ -280,11 +319,62 @@ function Favourites({
           </select>
         </label>
       </div>
+      {CURVE_ORDER.some((id) => !curveMadeIn(id, size)) && (
+        <p className="small muted">
+          {t(copy.result.curvesNotMade(t(copy.sizes[size]), CURVE_ORDER.filter((id) => !curveMadeIn(id, size)).join(", ")))}
+        </p>
+      )}
       {hasFavourites && (
         <button type="button" className="button button-quiet" onClick={() => onChange({})}>
           {t(copy.result.clearFavourites)}
         </button>
       )}
     </details>
+  );
+}
+
+/** Where a flex is sold, for example "JR 52\", INT 57\"". */
+function whereSold(flex: number): string {
+  return SIZE_ORDER.flatMap((size) => {
+    const lengths = [...new Set(STOCK_STICKS.filter((s) => s.size === size && s.flex === flex).map((s) => s.lengthIn))].sort((a, b) => a - b);
+    return lengths.length > 0 ? [`${copy.sizeShort[size]} ${lengths.map((l) => `${l}"`).join("/")}`] : [];
+  }).join(", ");
+}
+
+/** "A, B and C" */
+function listJoin(items: string[], and: string): string {
+  if (items.length <= 1) return items.join("");
+  return `${items.slice(0, -1).join(", ")} ${and} ${items[items.length - 1]}`;
+}
+
+/** Real models in the recommended size and flex range, to look for in the shop. */
+function Candidates({ candidates }: { candidates: Candidate[] }) {
+  const { t } = useLang();
+  if (candidates.length === 0) return null;
+  return (
+    <section className="candidates" aria-labelledby="candidates-title">
+      <h2 id="candidates-title">{t(copy.result.candidatesTitle)}</h2>
+      <p className="muted">{t(copy.result.candidatesBody)}</p>
+      <ul className="candidate-list">
+        {candidates.map(({ model, flexes, sizes, kickMatch }) => (
+          <li key={`${model.brand}-${model.name}`} className="candidate" data-match={kickMatch || undefined}>
+            <KickGlyph kick={model.kick} />
+            <div className="candidate-text">
+              <span className="candidate-brand">
+                {model.brand} {model.family}
+              </span>
+              <strong className="candidate-name">{model.name}</strong>
+              <span className="candidate-meta">
+                {sizes.map((size) => t(copy.sizes[size])).join(" / ")}, flex {flexes.join(", ")}. {t(copy.kicksPlain[model.kick])}.
+              </span>
+            </div>
+            <span className="tier-pill" data-tier={model.tier}>
+              {t(copy.result.tiers[model.tier])}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="small muted">{t(copy.result.candidatesNote)}</p>
+    </section>
   );
 }
